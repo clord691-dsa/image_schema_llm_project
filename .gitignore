@@ -1,0 +1,201 @@
+Place this at:
+
+```text
+goldsmiths_image_to_metaphor/.gitignore
+```
+
+```gitignore
+# ============================================================
+# Python
+# ============================================================
+
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.pyd
+
+.Python
+.python-version
+
+build/
+dist/
+downloads/
+eggs/
+.eggs/
+*.egg-info/
+*.egg
+
+pip-wheel-metadata/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# PyInstaller
+*.manifest
+*.spec
+
+
+# ============================================================
+# PyCharm / IDEs
+# ============================================================
+
+.idea/
+.vscode/
+*.iml
+
+
+# ============================================================
+# Jupyter
+# ============================================================
+
+.ipynb_checkpoints/
+*.nbconvert.ipynb
+
+
+# ============================================================
+# Environment variables and secrets
+# ============================================================
+
+.env
+.env.*
+!.env.example
+
+secrets/
+credentials/
+*.pem
+*.key
+*.crt
+
+
+# ============================================================
+# Logs
+# ============================================================
+
+logs/
+*.log
+run_logs/
+debug.log
+
+
+# ============================================================
+# OS files
+# ============================================================
+
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+desktop.ini
+
+
+# ============================================================
+# Project data: raw images and generated outputs
+# ============================================================
+
+# Generated experiment outputs
+data/outputs/
+data/cache/
+
+# Optional local scratch space
+scratch/
+tmp/
+temp/
+
+
+# ============================================================
+# Keep important directory structure
+# ============================================================
+
+!data/
+!data/inputs/
+!data/outputs/
+!data/cache/
+!data/raw/
+
+!data/inputs/.gitkeep
+!data/outputs/.gitkeep
+!data/cache/.gitkeep
+!data/raw/.gitkeep
+
+
+# ============================================================
+# Allow lightweight structured metadata if desired
+# ============================================================
+
+!data/inputs/*.json
+!data/inputs/*.jsonl
+!data/inputs/*.csv
+!data/inputs/*.md
+
+
+# ============================================================
+# Test and coverage artefacts
+# ============================================================
+
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+
+
+# ============================================================
+# Type checking / linting caches
+# ============================================================
+
+.mypy_cache/
+.pyre/
+.pytype/
+.ruff_cache/
+
+
+# ============================================================
+# Packaging / dependency managers
+# ============================================================
+
+poetry.lock
+Pipfile.lock
+
+# Keep lock files if you decide to use fully reproducible environments.
+# Remove the two lines above if you want to commit them.
+
+
+# ============================================================
+# Large model / embedding artefacts
+# ============================================================
+
+*.pkl
+*.pickle
+*.joblib
+*.npy
+*.npz
+*.parquet
+*.faiss
+*.index
+
+models/
+embeddings/
+vectorstores/
+
+
+# ============================================================
+# Local reports / exports
+# ============================================================
+
+exports/
+reports/generated/
+*.xlsx
+*.xls
+*.csv.gz
+*.zip
+*.tar
+*.tar.gz
+```
