@@ -1,0 +1,99 @@
+gold_sentences_v2_academic_domains.jsonl
+Total records: 200
+
+Annotation metadata:
+  annotation_status: draft_pending_human_validation
+  annotator_id: CL
+  validated_at: None
+  annotation_guideline_version: v1.0
+
+By category:
+  control_weak_schema: 66
+  literal_spatial: 67
+  metaphorical_spatial: 67
+
+By family:
+  BLOCKAGE: 33
+  CONTAINER: 34
+  FORCE: 33
+  SOURCE_PATH_GOAL: 34
+  SUPPORT_BALANCE: 33
+  VERTICALITY: 33
+
+By family/category cell:
+  BLOCKAGE / control_weak_schema: 11
+  BLOCKAGE / literal_spatial: 11
+  BLOCKAGE / metaphorical_spatial: 11
+  CONTAINER / control_weak_schema: 11
+  CONTAINER / literal_spatial: 12
+  CONTAINER / metaphorical_spatial: 11
+  FORCE / control_weak_schema: 11
+  FORCE / literal_spatial: 11
+  FORCE / metaphorical_spatial: 11
+  SOURCE_PATH_GOAL / control_weak_schema: 11
+  SOURCE_PATH_GOAL / literal_spatial: 11
+  SOURCE_PATH_GOAL / metaphorical_spatial: 12
+  SUPPORT_BALANCE / control_weak_schema: 11
+  SUPPORT_BALANCE / literal_spatial: 11
+  SUPPORT_BALANCE / metaphorical_spatial: 11
+  VERTICALITY / control_weak_schema: 11
+  VERTICALITY / literal_spatial: 11
+  VERTICALITY / metaphorical_spatial: 11
+
+Metaphorical target-domain inventory counts:
+  access: 1
+  agency: 5
+  argumentation: 6
+  attention: 2
+  behaviour change: 1
+  career development: 3
+  causation: 3
+  change: 2
+  cognition: 4
+  collective action: 3
+  collective identity: 1
+  collective state: 1
+  communication: 8
+  confidence: 3
+  decision making: 3
+  economic condition: 1
+  economic obligation: 1
+  economic value: 1
+  education: 1
+  emotion: 13
+  evaluation: 1
+  future outcome: 1
+  habitual action: 1
+  health: 1
+  institutional change: 1
+  institutional process: 3
+  institutional reputation: 2
+  knowledge production: 2
+  learning: 2
+  legal reasoning: 2
+  life circumstance: 4
+  life course: 3
+  memory: 1
+  motivation: 2
+  opportunity: 2
+  planning: 3
+  problem solving: 1
+  progress: 1
+  project management: 5
+  psychological state: 3
+  purposeful action: 1
+  purposeful activity: 1
+  quantity: 1
+  reasoning: 8
+  relationships: 2
+  situation: 1
+  social agreement: 2
+  social evaluation: 3
+  social relationships: 1
+  social situation: 1
+  social status: 3
+  state: 1
+  success: 1
+  time: 1
+  understanding: 2
+  wellbeing: 1

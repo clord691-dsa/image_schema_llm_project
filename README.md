@@ -1,5 +1,7 @@
-Initial program spec to GPT:
-Define a sentences corpus data structure with fields suitable for the project proposal which should be implemented as a jsonl database. Provide a python framework and github folder structure for the project. The design should incorporate a per LLM, per prompt (e.g naive, direct schema and structured role-based), per condition (e.g. model temperature), per sentence, iterative structure. The outputs from each permutation should be written to a jsonl database for subsequent analysis. The raw model responses should be recorded to minimise cost. The loop should monitor the cumulative cost of each model's api charges. The loop should stop if a spend threshold is reached. If the loop stops e.g. because of connection error or spend threshold it must be possible to restart the model from the last successful iteration. Prompts and conditions should be stored in jsonl database files for input into the program. Python function placeholders should be created rather than full code at this stage. e.g. an OpenAI API handler. Three LLMs will be used OpenAI, Claude and Gemini. Each placeholder function or class should contain commenary about inputs, outputs and purpose.
+### REPO FOLDER STRUCTURE
+
+Below is a project framework designed for: structured image-schema prompting for LLM interpretation of literal and metaphorical spatial language. It implements the experimental logic: per LLM × per prompt × per condition × per sentence, with restartable iteration, raw response capture, and cumulative cost monitoring. This fits the Goldsmith project’s focus on comparing naïve, direct-schema, and structured role-based prompts against a controlled sentence corpus.
+
 
 image_schema_llm_project/
 │
@@ -70,3 +72,5 @@ image_schema_llm_project/
     ├── test_jsonl_utils.py
     ├── test_experiment_grid.py
     └── test_checkpoint.py
+
+
