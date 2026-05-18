@@ -1,75 +1,59 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 from pathlib import Path
 
 
-@dataclass
+@dataclass(frozen=True)
 class ProjectPaths:
     """
-    Stores central project paths.
+    Centralised project paths for the image-schema LLM experiment.
 
-    Purpose:
-        Avoid hard-coding paths throughout the project.
+    Parameters
+    ----------
+    project_root:
+        Root of the repository.
 
-    Inputs:
-        project_root: Root directory of the GitHub project.
-
-    Outputs:
-        Path objects pointing to input and output JSONL databases.
+    Purpose
+    -------
+    Keeps data path construction consistent across validation, experiment
+    preview, and later execution scripts.
     """
 
     project_root: Path
 
     @property
-    def input_dir(self) -> Path:
-        return self.project_root / "data" / "inputs"
+    def data_dir(self) -> Path:
+        return self.project_root / "data"
 
     @property
-    def output_dir(self) -> Path:
-        return self.project_root / "data" / "outputs"
+    def inputs_dir(self) -> Path:
+        return self.data_dir / "inputs"
 
     @property
-    def sentences_path(self) -> Path:
-        return self.input_dir / "sentences.jsonl"
+    def gold_dir(self) -> Path:
+        return self.data_dir / "gold"
 
     @property
-    def prompts_path(self) -> Path:
-        return self.input_dir / "prompts.jsonl"
-
-    @property
-    def conditions_path(self) -> Path:
-        return self.input_dir / "conditions.jsonl"
+    def outputs_dir(self) -> Path:
+        return self.data_dir / "outputs"
 
     @property
     def models_path(self) -> Path:
-        return self.input_dir / "models.jsonl"
+        return self.inputs_dir / "models.jsonl"
+
+    @property
+    def prompts_path(self) -> Path:
+        return self.inputs_dir / "prompts.jsonl"
+
+    @property
+    def conditions_path(self) -> Path:
+        return self.inputs_dir / "conditions.jsonl"
+
+    @property
+    def sentences_path(self) -> Path:
+        return self.gold_dir / "sentences_v1.jsonl"
 
     @property
     def raw_responses_path(self) -> Path:
-        return self.output_dir / "raw_responses.jsonl"
-
-    @property
-    def cost_log_path(self) -> Path:
-        return self.output_dir / "cost_log.jsonl"
-
-    @property
-    def errors_path(self) -> Path:
-        return self.output_dir / "errors.jsonl"
-
-
-@dataclass
-class RuntimeConfig:
-    """
-    Stores runtime settings for an experiment run.
-
-    Inputs:
-        spend_threshold: Maximum permitted total estimated spend.
-        stop_on_error: Whether the loop should stop after a connection/API error.
-        dry_run: If True, build prompts and estimate flow without calling APIs.
-
-    Outputs:
-        Configuration used by the experiment runner.
-    """
-
-    spend_threshold: float
-    stop_on_error: bool = False
-    dry_run: bool = False
+        return self.outputs_dir / "raw_responses.jsonl"

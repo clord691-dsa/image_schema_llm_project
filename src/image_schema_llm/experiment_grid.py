@@ -1,61 +1,96 @@
-from typing import Any, Dict, Iterator, List
+from __future__ import annotations
+
+from collections.abc import Iterator
+
+from image_schema_llm.loaders import enabled_conditions, enabled_models
+from image_schema_llm.prompts.prompt_builder import build_user_prompt
+from image_schema_llm.schemas import ConditionConfig, ExperimentJob, ModelConfig, PromptConfig, SentenceRecord
+
+
+def make_run_key(
+    model_id: str,
+    prompt_id: str,
+    condition_id: str,
+    sentence_id: str,
+    repetition_index: int,
+) -> str:
+    """
+    Create the stable run key for one experiment permutation.
+
+    Purpose
+    -------
+    This key is used to detect completed runs and safely resume the experiment.
+    """
+
+    return f"{model_id}|{prompt_id}|{condition_id}|{sentence_id}|{repetition_index}"
 
 
 def build_experiment_grid(
-    models: List[Dict[str, Any]],
-    prompts: List[Dict[str, Any]],
-    conditions: List[Dict[str, Any]],
-    sentences: List[Dict[str, Any]],
-) -> Iterator[Dict[str, Any]]:
+    models: list[ModelConfig],
+    prompts: list[PromptConfig],
+    conditions: list[ConditionConfig],
+    sentences: list[SentenceRecord],
+) -> Iterator[ExperimentJob]:
     """
-    Build the full model × prompt × condition × sentence × repetition grid.
+    Yield model × prompt × condition × sentence × repetition jobs.
 
-    Inputs:
-        models:
-            Loaded records from models.jsonl.
-        prompts:
-            Loaded records from prompts.jsonl.
-        conditions:
-            Loaded records from conditions.jsonl.
-        sentences:
-            Loaded records from sentences.jsonl.
+    Inputs
+    ------
+    models:
+        Model configurations. Disabled models are skipped.
+    prompts:
+        Prompt configurations.
+    conditions:
+        Inference conditions. Disabled conditions are skipped.
+    sentences:
+        Gold/draft sentence records.
 
-    Outputs:
-        Iterator of experiment jobs.
+    Outputs
+    -------
+    Iterator[ExperimentJob]
+        One job per experimental API call.
 
-    Each yielded job should contain:
-        - model_id
-        - provider
-        - model_name
-        - prompt_id
-        - prompt_type
-        - condition_id
-        - temperature
-        - top_p
-        - max_output_tokens
-        - sentence_id
-        - sentence_text
-        - repetition_index
-
-    Purpose:
-        Defines the complete experimental permutation structure.
+    Purpose
+    -------
+    Defines the complete controlled experimental grid before API execution.
     """
-    raise NotImplementedError
+
+    for model in enabled_models(models):
+        for prompt in prompts:
+            for condition in enabled_conditions(conditions):
+                for sentence in sentences:
+                    for repetition_index in range(condition.repetitions):
+                        run_key = make_run_key(
+                            model.model_id,
+                            prompt.prompt_id,
+                            condition.condition_id,
+                            sentence.sentence_id,
+                            repetition_index,
+                        )
+                        yield ExperimentJob(
+                            run_key=run_key,
+                            model=model,
+                            prompt=prompt,
+                            condition=condition,
+                            sentence=sentence,
+                            repetition_index=repetition_index,
+                            system_message=prompt.system_message,
+                            user_prompt=build_user_prompt(prompt, sentence),
+                        )
 
 
-def make_run_key(job: Dict[str, Any]) -> str:
+def completed_run_keys_from_raw_records(raw_records: list[dict]) -> set[str]:
     """
-    Create a stable unique key for a single experimental permutation.
+    Extract completed run keys from raw response records.
 
-    Inputs:
-        job: One experiment job dictionary.
-
-    Outputs:
-        String key, for example:
-        openai_gpt|p_naive_v1|c_temp_0|s0001|0
-
-    Purpose:
-        Used to check whether a permutation has already completed.
-        This is essential for restart/resume behaviour.
+    Purpose
+    -------
+    Later used to resume interrupted experiments. A run is complete only when
+    raw_responses.jsonl contains a success record for the run key.
     """
-    raise NotImplementedError
+
+    return {
+        record["run_key"]
+        for record in raw_records
+        if record.get("status") == "success" and record.get("run_key")
+    }

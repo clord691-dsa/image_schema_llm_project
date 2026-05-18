@@ -1,0 +1,13 @@
+[project]
+name = "image-schema-llm"
+version = "0.1.0"
+description = "Utilities for structured image-schema LLM experiments"
+requires-python = ">=3.10"
+dependencies = []
+
+[tool.setuptools.package-dir]
+"" = "src"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"

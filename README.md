@@ -74,3 +74,8 @@ image_schema_llm_project/
     └── test_checkpoint.py
 
 
+### INPUT FILE TESTS
+pip install -e .
+python scripts/validate_inputs.py --project-root .
+python scripts/inspect_inputs.py --project-root .
+python scripts/preview_experiment_grid.py --project-root . --limit 10
