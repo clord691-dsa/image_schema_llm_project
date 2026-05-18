@@ -6,15 +6,7 @@ from typing import Any
 
 @dataclass(frozen=True)
 class ModelConfig:
-    """
-    One model configuration record loaded from data/inputs/models.jsonl.
-
-    Purpose
-    -------
-    Stores provider, model name, pricing, endpoint, and capability metadata.
-    The API key itself is never stored here; only the environment variable name
-    is stored.
-    """
+    """Model configuration loaded from data/inputs/models.jsonl."""
 
     model_id: str
     provider: str
@@ -50,15 +42,7 @@ class ModelConfig:
 
 @dataclass(frozen=True)
 class PromptConfig:
-    """
-    One prompt strategy record loaded from data/inputs/prompts.jsonl.
-
-    Purpose
-    -------
-    Stores the system message, user prompt template, output format expectation,
-    and output schema for a prompt family such as naive, direct_schema, or
-    structured_role_based.
-    """
+    """Prompt configuration loaded from data/inputs/prompts.jsonl."""
 
     prompt_id: str
     prompt_family: str
@@ -76,15 +60,7 @@ class PromptConfig:
 
 @dataclass(frozen=True)
 class ConditionConfig:
-    """
-    One inference condition loaded from data/inputs/conditions.jsonl.
-
-    Purpose
-    -------
-    Stores inference settings such as temperature, top_p, max output tokens,
-    and repetitions. Conditions define stochastic and budget-relevant
-    experimental variants.
-    """
+    """Inference condition loaded from data/inputs/conditions.jsonl."""
 
     condition_id: str
     condition_family: str
@@ -102,14 +78,7 @@ class ConditionConfig:
 
 @dataclass(frozen=True)
 class SentenceRecord:
-    """
-    One gold/draft sentence annotation loaded from data/gold/sentences_v1.jsonl.
-
-    Purpose
-    -------
-    Provides the sentence text, expected image-schema labels, literal/metaphorical
-    status, conceptual domains for metaphorical examples, and annotation metadata.
-    """
+    """Sentence annotation loaded from data/gold/sentences_v1.jsonl."""
 
     sentence_id: str
     text: str
@@ -129,16 +98,10 @@ class SentenceRecord:
 
 @dataclass(frozen=True)
 class ExperimentJob:
-    """
-    One model × prompt × condition × sentence × repetition permutation.
-
-    Purpose
-    -------
-    This object represents one API call to be made later by the experiment
-    runner. At this stage it is only used to preview and validate the grid.
-    """
+    """One model × prompt × condition × sentence × repetition permutation."""
 
     run_key: str
+    run_index: int
     model: ModelConfig
     prompt: PromptConfig
     condition: ConditionConfig
@@ -146,3 +109,30 @@ class ExperimentJob:
     repetition_index: int
     system_message: str
     user_prompt: str
+
+    def to_manifest_record(self) -> dict[str, Any]:
+        """Convert the job to a compact JSON-serialisable manifest record."""
+        return {
+            "run_key": self.run_key,
+            "run_index": self.run_index,
+            "model_id": self.model.model_id,
+            "provider": self.model.provider,
+            "model_name": self.model.model_name,
+            "model_snapshot": self.model.model_snapshot,
+            "prompt_id": self.prompt.prompt_id,
+            "prompt_family": self.prompt.prompt_family,
+            "prompt_version": self.prompt.prompt_version,
+            "condition_id": self.condition.condition_id,
+            "condition_family": self.condition.condition_family,
+            "condition_version": self.condition.condition_version,
+            "temperature": self.condition.temperature,
+            "top_p": self.condition.top_p,
+            "max_output_tokens": self.condition.max_output_tokens,
+            "sentence_id": self.sentence.sentence_id,
+            "sentence_type": self.sentence.sentence_type,
+            "expected_schema_primary": self.sentence.expected_schema_primary,
+            "expected_literal_or_metaphorical": self.sentence.expected_literal_or_metaphorical,
+            "repetition_index": self.repetition_index,
+            "system_message": self.system_message,
+            "user_prompt": self.user_prompt,
+        }

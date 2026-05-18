@@ -6,19 +6,7 @@ from pathlib import Path
 
 @dataclass(frozen=True)
 class ProjectPaths:
-    """
-    Centralised project paths for the image-schema LLM experiment.
-
-    Parameters
-    ----------
-    project_root:
-        Root of the repository.
-
-    Purpose
-    -------
-    Keeps data path construction consistent across validation, experiment
-    preview, and later execution scripts.
-    """
+    """Canonical project paths for the image-schema LLM project."""
 
     project_root: Path
 
@@ -57,3 +45,7 @@ class ProjectPaths:
     @property
     def raw_responses_path(self) -> Path:
         return self.outputs_dir / "raw_responses.jsonl"
+
+    @property
+    def manifest_path(self) -> Path:
+        return self.outputs_dir / "experiment_manifest.jsonl"

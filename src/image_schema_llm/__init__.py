@@ -1,1 +1,1 @@
-"""Image schema LLM experiment utilities."""
+"""Production utilities for the image-schema LLM experiment."""

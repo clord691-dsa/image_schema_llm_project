@@ -79,3 +79,6 @@ pip install -e .
 python scripts/validate_inputs.py --project-root .
 python scripts/inspect_inputs.py --project-root .
 python scripts/preview_experiment_grid.py --project-root . --limit 10
+
+### WRITE FULL MANIFEST
+python scripts/write_experiment_manifest.py --project-root .
