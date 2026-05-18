@@ -1,0 +1,41 @@
+[
+  {
+    "condition_id": "c_temp_0_v1",
+    "condition_family": "deterministic",
+    "condition_version": "v1.0",
+    "enabled": true,
+    "temperature": 0.0,
+    "top_p": 1.0,
+    "max_output_tokens": 800,
+    "repetitions": 1,
+    "random_seed": null,
+    "description": "Primary deterministic condition for baseline comparison and main evaluation.",
+    "notes": "Use this as the main low-cost condition. One repetition is sufficient because temperature is zero or near-deterministic, although providers may still vary slightly."
+  },
+  {
+    "condition_id": "c_temp_03_v1",
+    "condition_family": "low_stochasticity",
+    "condition_version": "v1.0",
+    "enabled": true,
+    "temperature": 0.3,
+    "top_p": 1.0,
+    "max_output_tokens": 800,
+    "repetitions": 2,
+    "random_seed": null,
+    "description": "Low-stochasticity condition for measuring modest prompt/model variability.",
+    "notes": "Two repetitions provide a small consistency check without multiplying API cost excessively."
+  },
+  {
+    "condition_id": "c_temp_07_v1",
+    "condition_family": "high_stochasticity",
+    "condition_version": "v1.0",
+    "enabled": false,
+    "temperature": 0.7,
+    "top_p": 1.0,
+    "max_output_tokens": 800,
+    "repetitions": 2,
+    "random_seed": null,
+    "description": "Optional higher-stochasticity condition for stress-testing output stability.",
+    "notes": "Disabled by default to control cost. Enable only after pilot runs confirm the pipeline and budget."
+  }
+]
