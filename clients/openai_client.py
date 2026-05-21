@@ -38,6 +38,10 @@ class OpenAIResponsesClient:
         response_format: dict[str, Any] | None = None,
         reasoning_effort: str | None = None,
     ) -> ModelResponse:
+        """
+        Generate one response using OpenAI Responses API.
+        """
+
         request: dict[str, Any] = {
             "model": model_name,
             "input": [
@@ -74,6 +78,10 @@ class OpenAIResponsesClient:
 
     @staticmethod
     def _extract_output_text(response: Any) -> str:
+        """
+        Extract text from an OpenAI Responses API response.
+        """
+
         output_text = getattr(response, "output_text", None)
         if output_text:
             return output_text
@@ -89,6 +97,10 @@ class OpenAIResponsesClient:
 
     @staticmethod
     def _extract_usage(response: Any) -> tuple[int | None, int | None]:
+        """
+        Extract provider-reported token usage.
+        """
+
         usage = getattr(response, "usage", None)
         if usage is None:
             return None, None
@@ -109,6 +121,10 @@ class OpenAIResponsesClient:
 
     @staticmethod
     def _safe_metadata(response: Any) -> dict[str, Any]:
+        """
+        Return minimal provider metadata suitable for JSON serialisation.
+        """
+
         usage = getattr(response, "usage", None)
         usage_metadata: dict[str, Any] | None = None
 

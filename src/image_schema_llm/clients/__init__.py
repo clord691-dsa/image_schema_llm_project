@@ -1,6 +1,6 @@
 
 from image_schema_llm.clients.base_client import BaseLLMClient
-from image_schema_llm.clients.openai_client import OpenAIClient
+from image_schema_llm.clients.openai_client import OpenAIResponsesClient
 from image_schema_llm.clients.claude_client import ClaudeClient
 from image_schema_llm.clients.gemini_client import GeminiClient
 

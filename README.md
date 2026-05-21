@@ -200,3 +200,19 @@ So the core logic lives in:
 src/image_schema_llm/dry_run.py
 The scripts are just command-line entry points for using that logic.
 
+#### Run Open AI on the manifest
+export OPENAI_API_KEY="..."
+python scripts/run_openai_next_job.py --project-root . --dry-run
+
+#### Run the next pending OpenAI job
+python scripts/run_openai_next_job.py --project-root .
+
+#### Run a specfic job
+python scripts/run_openai_next_job.py --project-root . \
+  --run-key "openai_gpt_5_4_mini|p_naive_v1|c_temp_0_v1|s0001|0"
+
+#### Successful responses are immediately written to:
+data/outputs/raw_responses.jsonl
+
+#### and a cost record is written to:
+data/outputs/cost_log.jsonl
