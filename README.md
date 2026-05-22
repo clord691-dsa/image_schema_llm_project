@@ -223,3 +223,50 @@ data/outputs/raw_responses.jsonl
 
 #### and a cost record is written to:
 data/outputs/cost_log.jsonl
+
+#### Run-time Cost Tracker
+python scripts/inspect_costs.py --project-root .
+python scripts/inspect_costs.py --project-root . --write-summary
+python scripts/rebuild_cost_summary.py --project-root .
+pytest tests/test_cost_tracker_runtime.py
+
+#### The default cutoff is set in the scripts here
+data/inputs/runtime_config.json
+with the budget cutoff stored here:
+{
+  "spend_threshold": 10.0,
+  "currency": "USD",
+  "stop_on_error": false,
+  "dry_run": false,
+  "cost_log_filename": "cost_log.jsonl",
+  "cost_summary_filename": "cost_summary.json"
+}
+
+#### Validation
+python scripts/init_runtime_config.py --project-root .
+python scripts/inspect_runtime_config.py --project-root .
+python scripts/inspect_costs.py --project-root .
+python scripts/rebuild_cost_summary.py --project-root .
+
+#### Parsing
+After running some API calls:
+    python scripts/parse_responses.py --project-root .
+
+This reads:
+    data/outputs/raw_responses.jsonl
+
+and writes:
+    data/outputs/parsed_responses.jsonl
+
+Then inspect:
+    python scripts/inspect_parsed_responses.py --project-root .
+
+This gives a quick summary of parse status and preliminary accuracy. In short The parsing pipeline exists to protect the project from treating raw LLM text as if it were already clean data.
+
+Its purpose is to:
+    preserve raw model evidence
+    extract structured fields
+    normalise inconsistent model output
+    preserve parse failures
+    avoid unnecessary API reruns
+    prepare data for scoring and statistical comparison

@@ -1,0 +1,9 @@
+{
+  "spend_threshold": 20.0,
+  "currency": "USD",
+  "stop_on_error": false,
+  "dry_run": false,
+  "cost_log_filename": "cost_log.jsonl",
+  "cost_summary_filename": "cost_summary.json",
+  "notes": "Runtime configuration for budget control and execution behaviour. The spend_threshold value is the global estimated API spend cutoff."
+}
