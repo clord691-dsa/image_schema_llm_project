@@ -200,12 +200,19 @@ So the core logic lives in:
 src/image_schema_llm/dry_run.py
 The scripts are just command-line entry points for using that logic.
 
-#### Run Open AI on the manifest
+#### Run the models on the manifest
 export OPENAI_API_KEY="..."
-python scripts/run_openai_next_job.py --project-root . --dry-run
+export ANTHROPIC_API_KEY="..."
+export GEMINI_API_KEY="..."
 
-#### Run the next pending OpenAI job
+python scripts/run_openai_next_job.py --project-root . --dry-run
+python scripts/run_claude_next_job.py --project-root . --dry-run
+python scripts/run_gemini_next_job.py --project-root . --dry-run
+
+#### Run the next pending model job
 python scripts/run_openai_next_job.py --project-root .
+python scripts/run_claude_next_job.py --project-root .
+python scripts/run_gemini_next_job.py --project-root .
 
 #### Run a specfic job
 python scripts/run_openai_next_job.py --project-root . \

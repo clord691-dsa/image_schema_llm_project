@@ -50,9 +50,14 @@ class ClaudeMessagesClient:
             "system": system_message,
             "messages": [{"role": "user", "content": user_prompt}],
         }
-        if temperature is not None:
+        if temperature is not None and top_p is not None:
+            # Anthropic recommends using either temperature or top_p, not both.
+            # For this project, temperature is the experimental condition variable,
+            # so temperature takes priority and top_p is suppressed.
             request["temperature"] = temperature
-        if top_p is not None:
+        elif temperature is not None:
+            request["temperature"] = temperature
+        elif top_p is not None:
             request["top_p"] = top_p
 
         response = self.client.messages.create(**request)
