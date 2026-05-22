@@ -248,6 +248,30 @@ python scripts/inspect_runtime_config.py --project-root .
 python scripts/inspect_costs.py --project-root .
 python scripts/rebuild_cost_summary.py --project-root .
 
+#### Run the entire manifest
+
+Recommended usage:
+python scripts/run_provider_manifest.py --project-root . --provider openai --dry-run --max-jobs 5
+
+Run a small pilot:
+python scripts/run_provider_manifest.py --project-root . --provider openai --execute --max-jobs 20 --stop-on-error
+
+Run the whole pending manifest for one provider:
+python scripts/run_provider_manifest.py --project-root . --provider openai --execute --stop-on-error
+
+Claude:
+python scripts/run_provider_manifest.py --project-root . --provider anthropic --execute --stop-on-error
+
+Gemini:
+python scripts/run_provider_manifest.py --project-root . --provider google --execute --stop-on-error
+
+
+For rate-limit safety:
+python scripts/run_provider_manifest.py --project-root . --provider anthropic --execute --sleep-seconds 1 --stop-on-error
+
+It uses `raw_responses.jsonl` checkpoint logic, so completed `run_key`s are skipped automatically on restart.
+
+
 #### Parsing
 After running some API calls:
     python scripts/parse_responses.py --project-root .
@@ -270,3 +294,18 @@ Its purpose is to:
     preserve parse failures
     avoid unnecessary API reruns
     prepare data for scoring and statistical comparison
+
+#### Analysis
+The notebooks are designed to support what the project would show if models perform similarly or differently on literal versus metaphorical expressions, whether the project is testing “understanding” or structured application of image schemas, and what can be concluded from a naïve prompt giving a good ordinary interpretation without explicit image-schema terminology.
+
+Run order:
+python scripts/parse_responses.py --project-root .
+
+Then open:
+01_parse_quality_and_dataset_coverage.ipynb
+02_schema_accuracy_by_sentence_type_and_prompt.ipynb
+03_tutor_response_evidence_notebook.ipynb
+
+The third notebook includes a tutor-facing interpretation matrix and draft response logic, including the position that the project is not trying to prove embodied cognition in LLMs, but testing whether image-schema prompting provides a useful intermediate representational layer beyond ordinary paraphrase.
+
+####
