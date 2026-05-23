@@ -1,0 +1,7 @@
+prompt_family,sentence_type,n_schema,schema_accuracy,n_lm,literal_metaphorical_accuracy
+direct_schema,control_weak_schema,578.0,0.4411764705882353,594.0,0.008417508417508417
+direct_schema,literal_spatial,595.0,0.8252100840336134,603.0,1.0
+direct_schema,metaphorical_spatial,596.0,0.912751677852349,603.0,0.9983416252072969
+structured_role_based,control_weak_schema,594.0,0.7138047138047138,594.0,0.6111111111111112
+structured_role_based,literal_spatial,603.0,0.7927031509121062,603.0,0.9850746268656716
+structured_role_based,metaphorical_spatial,603.0,0.8988391376451078,603.0,1.0
