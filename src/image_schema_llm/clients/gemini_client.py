@@ -3,21 +3,35 @@ from __future__ import annotations
 import os
 from typing import Any
 
-from google import genai
-from google.genai import types
-
 from image_schema_llm.clients.base_client import ModelResponse
 
 
-class GeminiGenerateContentClient:
-    """
-    Google Gemini client using the Google Gen AI Python SDK.
+def _sanitize_schema_for_gemini(schema: dict[str, Any]) -> dict[str, Any]:
+    """Remove JSON Schema keywords Gemini response_schema may reject."""
+    unsupported_keys = {"additionalProperties", "additional_properties", "$schema", "$id"}
+    def clean(value: Any) -> Any:
+        if isinstance(value, dict):
+            return {key: clean(child) for key, child in value.items() if key not in unsupported_keys}
+        if isinstance(value, list):
+            return [clean(item) for item in value]
+        return value
+    return clean(schema)
 
-    Uses a Gemini Developer API key from GEMINI_API_KEY by default, or from the
-    environment variable named in models.jsonl.
+
+class GeminiGenerateContentClient:
+    """Google Gemini client using the Google Gen AI Python SDK.
+
+    The Google SDK is imported lazily in __init__ so importing the package does
+    not require every optional provider dependency to be installed.
     """
 
     def __init__(self, *, api_key_env_var: str = "GEMINI_API_KEY") -> None:
+        try:
+            from google import genai
+        except ImportError as exc:
+            raise RuntimeError(
+                "The Google Gen AI SDK is not installed. Run: python -m pip install google-genai"
+            ) from exc
         api_key = os.getenv(api_key_env_var)
         if not api_key:
             raise RuntimeError(
@@ -38,13 +52,12 @@ class GeminiGenerateContentClient:
         response_format: dict[str, Any] | None = None,
         reasoning_effort: str | None = None,
     ) -> ModelResponse:
-        """
-        Generate one Gemini response.
-
-        `system_message` is passed as system_instruction. If response_format
-        includes {"response_mime_type": "application/json"}, Gemini JSON mode is
-        requested.
-        """
+        try:
+            from google.genai import types
+        except ImportError as exc:
+            raise RuntimeError(
+                "The Google Gen AI SDK is not installed. Run: python -m pip install google-genai"
+            ) from exc
 
         config_kwargs: dict[str, Any] = {
             "system_instruction": system_message,
@@ -58,20 +71,21 @@ class GeminiGenerateContentClient:
             if response_format.get("response_mime_type"):
                 config_kwargs["response_mime_type"] = response_format["response_mime_type"]
             if response_format.get("response_schema"):
-                config_kwargs["response_schema"] = response_format["response_schema"]
+                config_kwargs["response_schema"] = _sanitize_schema_for_gemini(response_format["response_schema"])
 
         response = self.client.models.generate_content(
             model=model_name,
             contents=user_prompt,
             config=types.GenerateContentConfig(**config_kwargs),
         )
-
+        input_tokens, output_tokens = self._extract_usage(response)
         return ModelResponse(
             raw_response=self._extract_output_text(response),
-            input_tokens=self._extract_usage(response)[0],
-            output_tokens=self._extract_usage(response)[1],
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
             provider_response_id=getattr(response, "response_id", None),
             provider_metadata=self._safe_metadata(response),
+            finish_reason=self._extract_finish_reason(response),
         )
 
     @staticmethod
@@ -79,7 +93,6 @@ class GeminiGenerateContentClient:
         text = getattr(response, "text", None)
         if text:
             return text
-
         chunks: list[str] = []
         for candidate in getattr(response, "candidates", []) or []:
             content = getattr(candidate, "content", None)
@@ -97,10 +110,16 @@ class GeminiGenerateContentClient:
             return None, None
         if isinstance(usage, dict):
             return usage.get("prompt_token_count"), usage.get("candidates_token_count")
-        return (
-            getattr(usage, "prompt_token_count", None),
-            getattr(usage, "candidates_token_count", None),
-        )
+        return getattr(usage, "prompt_token_count", None), getattr(usage, "candidates_token_count", None)
+
+    @staticmethod
+    def _extract_finish_reason(response: Any) -> str | None:
+        reasons: list[str] = []
+        for candidate in getattr(response, "candidates", []) or []:
+            finish_reason = getattr(candidate, "finish_reason", None)
+            if finish_reason:
+                reasons.append(str(finish_reason))
+        return "|".join(dict.fromkeys(reasons)) if reasons else None
 
     @staticmethod
     def _safe_metadata(response: Any) -> dict[str, Any]:
@@ -120,5 +139,6 @@ class GeminiGenerateContentClient:
             "provider": "google",
             "response_id": getattr(response, "response_id", None),
             "model_version": getattr(response, "model_version", None),
+            "finish_reason": GeminiGenerateContentClient._extract_finish_reason(response),
             "usage": usage_metadata,
         }

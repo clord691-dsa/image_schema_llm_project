@@ -1,22 +1,27 @@
 from __future__ import annotations
 
 import os
+import warnings
 from typing import Any
-
-from anthropic import Anthropic
 
 from image_schema_llm.clients.base_client import ModelResponse
 
 
 class ClaudeMessagesClient:
-    """
-    Anthropic Claude client using the Messages API.
+    """Anthropic Claude client using the Messages API.
 
-    The Anthropic SDK reads ANTHROPIC_API_KEY by default, but this client
-    supports any environment variable name supplied by models.jsonl.
+    The Anthropic SDK is imported lazily in __init__ so importing the package
+    does not require every optional provider dependency to be installed.
     """
 
     def __init__(self, *, api_key_env_var: str = "ANTHROPIC_API_KEY") -> None:
+        try:
+            from anthropic import Anthropic
+        except ImportError as exc:
+            raise RuntimeError(
+                "The Anthropic SDK is not installed. Run: python -m pip install anthropic"
+            ) from exc
+
         api_key = os.getenv(api_key_env_var)
         if not api_key:
             raise RuntimeError(
@@ -37,13 +42,6 @@ class ClaudeMessagesClient:
         response_format: dict[str, Any] | None = None,
         reasoning_effort: str | None = None,
     ) -> ModelResponse:
-        """
-        Generate one Claude response.
-
-        Claude uses `max_tokens`, not `max_output_tokens`. JSON output is
-        controlled by the prompt in this simple integration.
-        """
-
         request: dict[str, Any] = {
             "model": model_name,
             "max_tokens": max_output_tokens,
@@ -51,9 +49,11 @@ class ClaudeMessagesClient:
             "messages": [{"role": "user", "content": user_prompt}],
         }
         if temperature is not None and top_p is not None:
-            # Anthropic recommends using either temperature or top_p, not both.
-            # For this project, temperature is the experimental condition variable,
-            # so temperature takes priority and top_p is suppressed.
+            warnings.warn(
+                "Claude request received both temperature and top_p. Suppressing top_p.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
             request["temperature"] = temperature
         elif temperature is not None:
             request["temperature"] = temperature
@@ -61,13 +61,14 @@ class ClaudeMessagesClient:
             request["top_p"] = top_p
 
         response = self.client.messages.create(**request)
-
+        input_tokens, output_tokens = self._extract_usage(response)
         return ModelResponse(
             raw_response=self._extract_output_text(response),
-            input_tokens=self._extract_usage(response)[0],
-            output_tokens=self._extract_usage(response)[1],
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
             provider_response_id=getattr(response, "id", None),
             provider_metadata=self._safe_metadata(response),
+            finish_reason=getattr(response, "stop_reason", None),
         )
 
     @staticmethod

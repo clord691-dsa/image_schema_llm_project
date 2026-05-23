@@ -6,35 +6,17 @@ from typing import Any, Protocol
 
 @dataclass(frozen=True)
 class ModelResponse:
-    """
-    Normalised response object returned by provider clients.
-
-    Fields
-    ------
-    raw_response:
-        Main text output from the model.
-    input_tokens:
-        Provider-reported input token count where available.
-    output_tokens:
-        Provider-reported output token count where available.
-    provider_response_id:
-        Provider response identifier where available.
-    provider_metadata:
-        Provider-specific metadata kept for audit/debugging.
-    """
+    """Normalised response object returned by provider clients."""
 
     raw_response: str
     input_tokens: int | None
     output_tokens: int | None
     provider_response_id: str | None = None
     provider_metadata: dict[str, Any] = field(default_factory=dict)
+    finish_reason: str | None = None
 
 
 class BaseLLMClient(Protocol):
-    """
-    Protocol for all LLM provider clients.
-    """
-
     def generate(
         self,
         *,

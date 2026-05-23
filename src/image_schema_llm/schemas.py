@@ -42,7 +42,13 @@ class ModelConfig:
 
 @dataclass(frozen=True)
 class PromptConfig:
-    """Prompt configuration loaded from data/inputs/prompts.jsonl."""
+    """
+    Prompt configuration loaded from data/inputs/prompts.jsonl.
+
+    recommended_max_output_tokens is optional but important for this project:
+    structured prompts should not be constrained by a short naïve-prompt output
+    limit, otherwise JSON responses may be truncated.
+    """
 
     prompt_id: str
     prompt_family: str
@@ -55,6 +61,7 @@ class PromptConfig:
     required_placeholders: list[str]
     output_schema: dict[str, Any]
     notes: str | None = None
+    recommended_max_output_tokens: int | None = None
     raw: dict[str, Any] = field(default_factory=dict)
 
 
@@ -110,8 +117,19 @@ class ExperimentJob:
     system_message: str
     user_prompt: str
 
+    @property
+    def effective_max_output_tokens(self) -> int:
+        """
+        Use the larger of condition max_output_tokens and prompt-level
+        recommended_max_output_tokens.
+
+        This prevents structured JSON prompts from being truncated by short
+        generic condition limits.
+        """
+        prompt_limit = self.prompt.recommended_max_output_tokens or 0
+        return max(self.condition.max_output_tokens, prompt_limit)
+
     def to_manifest_record(self) -> dict[str, Any]:
-        """Convert the job to a compact JSON-serialisable manifest record."""
         return {
             "run_key": self.run_key,
             "run_index": self.run_index,
@@ -127,7 +145,9 @@ class ExperimentJob:
             "condition_version": self.condition.condition_version,
             "temperature": self.condition.temperature,
             "top_p": self.condition.top_p,
-            "max_output_tokens": self.condition.max_output_tokens,
+            "condition_max_output_tokens": self.condition.max_output_tokens,
+            "recommended_max_output_tokens": self.prompt.recommended_max_output_tokens,
+            "effective_max_output_tokens": self.effective_max_output_tokens,
             "sentence_id": self.sentence.sentence_id,
             "sentence_type": self.sentence.sentence_type,
             "expected_schema_primary": self.sentence.expected_schema_primary,
