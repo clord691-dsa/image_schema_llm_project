@@ -7,14 +7,26 @@ from image_schema_llm.clients.base_client import ModelResponse
 
 
 def _sanitize_schema_for_gemini(schema: dict[str, Any]) -> dict[str, Any]:
-    """Remove JSON Schema keywords Gemini response_schema may reject."""
+    """
+    Remove JSON Schema keywords that Gemini response_schema may reject.
+
+    Gemini supports a useful subset of JSON schema for structured output. This
+    keeps the project schema strict enough for shape guidance while avoiding
+    provider-specific incompatibilities.
+    """
     unsupported_keys = {"additionalProperties", "additional_properties", "$schema", "$id"}
+
     def clean(value: Any) -> Any:
         if isinstance(value, dict):
-            return {key: clean(child) for key, child in value.items() if key not in unsupported_keys}
+            return {
+                key: clean(child)
+                for key, child in value.items()
+                if key not in unsupported_keys
+            }
         if isinstance(value, list):
             return [clean(item) for item in value]
         return value
+
     return clean(schema)
 
 
@@ -32,11 +44,13 @@ class GeminiGenerateContentClient:
             raise RuntimeError(
                 "The Google Gen AI SDK is not installed. Run: python -m pip install google-genai"
             ) from exc
+
         api_key = os.getenv(api_key_env_var)
         if not api_key:
             raise RuntimeError(
                 f"Missing Gemini API key. Set environment variable {api_key_env_var}."
             )
+
         self.api_key_env_var = api_key_env_var
         self.client = genai.Client(api_key=api_key)
 
@@ -63,36 +77,56 @@ class GeminiGenerateContentClient:
             "system_instruction": system_message,
             "max_output_tokens": max_output_tokens,
         }
+
         if temperature is not None:
             config_kwargs["temperature"] = temperature
         if top_p is not None:
             config_kwargs["top_p"] = top_p
+
         if response_format:
             if response_format.get("response_mime_type"):
                 config_kwargs["response_mime_type"] = response_format["response_mime_type"]
             if response_format.get("response_schema"):
-                config_kwargs["response_schema"] = _sanitize_schema_for_gemini(response_format["response_schema"])
+                config_kwargs["response_schema"] = _sanitize_schema_for_gemini(
+                    response_format["response_schema"]
+                )
 
         response = self.client.models.generate_content(
             model=model_name,
             contents=user_prompt,
             config=types.GenerateContentConfig(**config_kwargs),
         )
+
         input_tokens, output_tokens = self._extract_usage(response)
+        metadata = self._safe_metadata(response)
+        metadata["request_config"] = {
+            "response_mime_type": config_kwargs.get("response_mime_type"),
+            "has_response_schema": "response_schema" in config_kwargs,
+            "max_output_tokens": max_output_tokens,
+            "temperature": temperature,
+            "top_p": top_p,
+            "reasoning_effort": reasoning_effort,
+        }
+
         return ModelResponse(
             raw_response=self._extract_output_text(response),
             input_tokens=input_tokens,
             output_tokens=output_tokens,
             provider_response_id=getattr(response, "response_id", None),
-            provider_metadata=self._safe_metadata(response),
+            provider_metadata=metadata,
             finish_reason=self._extract_finish_reason(response),
         )
 
     @staticmethod
     def _extract_output_text(response: Any) -> str:
-        text = getattr(response, "text", None)
-        if text:
-            return text
+        """
+        Extract text from Gemini candidates directly before falling back to the
+        convenience response.text accessor.
+
+        Candidate walking is more transparent for debugging blocked or truncated
+        outputs because the raw text parts are read explicitly.
+        """
+
         chunks: list[str] = []
         for candidate in getattr(response, "candidates", []) or []:
             content = getattr(candidate, "content", None)
@@ -101,7 +135,12 @@ class GeminiGenerateContentClient:
                 part_text = getattr(part, "text", None)
                 if part_text:
                     chunks.append(part_text)
-        return "\n".join(chunks)
+
+        if chunks:
+            return "\n".join(chunks)
+
+        text = getattr(response, "text", None)
+        return text if text else ""
 
     @staticmethod
     def _extract_usage(response: Any) -> tuple[int | None, int | None]:
@@ -110,7 +149,10 @@ class GeminiGenerateContentClient:
             return None, None
         if isinstance(usage, dict):
             return usage.get("prompt_token_count"), usage.get("candidates_token_count")
-        return getattr(usage, "prompt_token_count", None), getattr(usage, "candidates_token_count", None)
+        return (
+            getattr(usage, "prompt_token_count", None),
+            getattr(usage, "candidates_token_count", None),
+        )
 
     @staticmethod
     def _extract_finish_reason(response: Any) -> str | None:
@@ -135,6 +177,7 @@ class GeminiGenerateContentClient:
             }
         else:
             usage_metadata = None
+
         return {
             "provider": "google",
             "response_id": getattr(response, "response_id", None),

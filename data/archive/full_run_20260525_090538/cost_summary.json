@@ -1,0 +1,31 @@
+{
+  "currency": "USD",
+  "spend_threshold": 20.0,
+  "remaining_budget": 2.128196999999954,
+  "threshold_reached": false,
+  "totals": {
+    "global_total": 17.871803000000046,
+    "by_model": {
+      "openai_gpt_5_4_mini": 2.881435499999993,
+      "claude_sonnet_4_6": 13.418760000000008,
+      "gemini_2_5_flash": 1.5716075000000067
+    },
+    "by_provider": {
+      "openai": 2.881435499999993,
+      "anthropic": 13.418760000000008,
+      "google": 1.5716075000000067
+    },
+    "calls_by_model": {
+      "openai_gpt_5_4_mini": 3000,
+      "claude_sonnet_4_6": 3000,
+      "gemini_2_5_flash": 3000
+    },
+    "calls_by_provider": {
+      "openai": 3000,
+      "anthropic": 3000,
+      "google": 3000
+    }
+  },
+  "created_at": "2026-05-25T07:58:03.378677+00:00",
+  "cost_log_path": "/Users/Shared/image_schema_llm_project/data/outputs/cost_log.jsonl"
+}

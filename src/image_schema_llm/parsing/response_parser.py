@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-import ast
 import json
 import re
 from dataclasses import dataclass, field
-from json import JSONDecoder
 from typing import Any
 
 
+ALLOWED_SCHEMA_PRESENT = {"yes", "no", "uncertain"}
 ALLOWED_LITERALITY = {"literal", "metaphorical", "control", "uncertain"}
 ALLOWED_SCHEMAS = {
     "CONTAINER",
@@ -19,7 +18,34 @@ ALLOWED_SCHEMAS = {
     "NONE",
     "uncertain",
 }
-ALLOWED_CONFIDENCE = {"high", "medium", "low"}
+
+SCHEMA_ALIASES = {
+    "PATH": "SOURCE_PATH_GOAL",
+    "SOURCE-PATH-GOAL": "SOURCE_PATH_GOAL",
+    "SOURCE_PATH_GOAL": "SOURCE_PATH_GOAL",
+    "SOURCE PATH GOAL": "SOURCE_PATH_GOAL",
+    "CONTAINMENT": "CONTAINER",
+    "CONTAINER": "CONTAINER",
+    "BLOCKAGE": "BLOCKAGE",
+    "OBSTACLE": "BLOCKAGE",
+    "FORCE": "FORCE",
+    "FORCE_DYNAMICS": "FORCE",
+    "FORCE-DYNAMICS": "FORCE",
+    "UP_DOWN": "VERTICALITY",
+    "UP-DOWN": "VERTICALITY",
+    "VERTICALITY": "VERTICALITY",
+    "SCALE": "VERTICALITY",
+    "SUPPORT": "SUPPORT_BALANCE",
+    "BALANCE": "SUPPORT_BALANCE",
+    "SUPPORT_BALANCE": "SUPPORT_BALANCE",
+    "SUPPORT-BALANCE": "SUPPORT_BALANCE",
+    "NONE": "NONE",
+    "NO_SCHEMA": "NONE",
+    "NO SCHEMA": "NONE",
+    "WEAK_SCHEMA": "NONE",
+    "WEAK-SCHEMA": "NONE",
+    "UNCERTAIN": "uncertain",
+}
 
 
 @dataclass(frozen=True)
@@ -27,14 +53,10 @@ class ParsedResponse:
     """
     Normalised parsed response produced from one raw model response.
 
-    parse_status values:
-    - parsed: complete JSON or at least the core fields were recovered.
-    - partial: some useful fields were recovered, but not enough for schema scoring.
-    - free_text_unparsed: expected free-text baseline output.
-    - parse_error: no useful structured evidence was recovered.
-
-    The parser is intentionally transparent. It does not silently pretend that
-    truncated JSON is complete. Instead it adds parse_quality and usability flags.
+    The parser supports both complete JSON and data-aware partial recovery for
+    provider outputs that begin a valid JSON object but are truncated before the
+    closing brace. Partial recovery is deliberately conservative: it only marks
+    a field usable when the exact relevant key/value pair can be recovered.
     """
 
     parse_status: str
@@ -43,6 +65,7 @@ class ParsedResponse:
     parse_quality: str | None
     usable_for_schema_accuracy: bool
     usable_for_lm_accuracy: bool
+    schema_present: str | None
     literal_or_metaphorical: str | None
     main_image_schema: str | None
     secondary_image_schemas: list[str]
@@ -68,6 +91,7 @@ class ParsedResponse:
             "parse_quality": self.parse_quality,
             "usable_for_schema_accuracy": self.usable_for_schema_accuracy,
             "usable_for_lm_accuracy": self.usable_for_lm_accuracy,
+            "schema_present": self.schema_present,
             "literal_or_metaphorical": self.literal_or_metaphorical,
             "main_image_schema": self.main_image_schema,
             "secondary_image_schemas": self.secondary_image_schemas,
@@ -87,417 +111,256 @@ class ParsedResponse:
         }
 
 
-def _empty_parse(
-    parse_status: str,
-    parse_error: str | None,
+def _make_response(
     *,
+    parse_status: str,
+    parse_error: str | None = None,
     parser_strategy: str | None = None,
     parse_quality: str | None = None,
+    schema_present: str | None = None,
+    literal_or_metaphorical: str | None = None,
+    main_image_schema: str | None = None,
+    secondary_image_schemas: list[str] | None = None,
+    trajector: str = "",
+    landmark_or_container: str = "",
+    source: str = "",
+    path: str = "",
+    goal: str = "",
+    obstacle: str = "",
+    force: str = "",
+    source_domain: list[str] | None = None,
+    target_domain: list[str] | None = None,
+    interpretation: str = "",
+    schema_explanation: str = "",
+    confidence: str | None = None,
+    parsed_json: dict[str, Any] | None = None,
 ) -> ParsedResponse:
+    usable_for_schema = main_image_schema not in {None, ""}
+    usable_for_lm = literal_or_metaphorical not in {None, ""}
+
     return ParsedResponse(
         parse_status=parse_status,
         parse_error=parse_error,
         parser_strategy=parser_strategy,
         parse_quality=parse_quality,
-        usable_for_schema_accuracy=False,
-        usable_for_lm_accuracy=False,
-        literal_or_metaphorical=None,
-        main_image_schema=None,
-        secondary_image_schemas=[],
-        trajector="",
-        landmark_or_container="",
-        source="",
-        path="",
-        goal="",
-        obstacle="",
-        force="",
-        source_domain=[],
-        target_domain=[],
-        interpretation="",
-        schema_explanation="",
-        confidence=None,
-        parsed_json={},
+        usable_for_schema_accuracy=usable_for_schema,
+        usable_for_lm_accuracy=usable_for_lm,
+        schema_present=schema_present,
+        literal_or_metaphorical=literal_or_metaphorical,
+        main_image_schema=main_image_schema,
+        secondary_image_schemas=secondary_image_schemas or [],
+        trajector=trajector,
+        landmark_or_container=landmark_or_container,
+        source=source,
+        path=path,
+        goal=goal,
+        obstacle=obstacle,
+        force=force,
+        source_domain=source_domain or [],
+        target_domain=target_domain or [],
+        interpretation=interpretation,
+        schema_explanation=schema_explanation,
+        confidence=confidence,
+        parsed_json=parsed_json or {},
     )
 
 
 def _coerce_list(value: Any) -> list[str]:
     if value is None:
         return []
-    if isinstance(value, (list, tuple)):
+    if isinstance(value, list):
         return [str(item).strip() for item in value if str(item).strip()]
     if isinstance(value, str):
         text = value.strip()
-        if not text:
-            return []
-        if "," in text and len(text) < 120:
-            parts = [part.strip() for part in text.split(",")]
-            if all(parts):
-                return parts
-        return [text]
+        return [text] if text else []
     return [str(value).strip()]
 
 
 def _coerce_str(value: Any) -> str:
+    return "" if value is None else str(value).strip()
+
+
+def _normalise_schema(value: Any) -> str | None:
     if value is None:
-        return ""
-    if isinstance(value, (dict, list, tuple)):
-        return json.dumps(value, ensure_ascii=False)
-    return str(value).strip()
+        return None
+    text = str(value).strip()
+    if not text:
+        return None
+    key = text.upper().replace(" ", "_")
+    return SCHEMA_ALIASES.get(key, "uncertain")
 
 
-def _normalise_label(value: Any, allowed: set[str], *, default: str | None = None) -> str | None:
+def _normalise_literality(value: Any) -> str | None:
     if value is None:
-        return default
-
-    if allowed in (ALLOWED_LITERALITY, ALLOWED_CONFIDENCE):
-        label = str(value).strip().lower()
-        return label if label in allowed else default
-
-    label = str(value).strip().replace("-", "_").replace(" ", "_").upper()
-    aliases = {
-        "PATH": "SOURCE_PATH_GOAL",
-        "PATH_SCHEMA": "SOURCE_PATH_GOAL",
-        "SOURCE_PATH_GOAL_SCHEMA": "SOURCE_PATH_GOAL",
-        "SOURCE_PATH": "SOURCE_PATH_GOAL",
-        "SPG": "SOURCE_PATH_GOAL",
-        "SUPPORT": "SUPPORT_BALANCE",
-        "BALANCE": "SUPPORT_BALANCE",
-        "SUPPORT_BALANCE_SCHEMA": "SUPPORT_BALANCE",
-        "BLOCKAGE_SCHEMA": "BLOCKAGE",
-        "FORCE_SCHEMA": "FORCE",
-        "CONTAINER_SCHEMA": "CONTAINER",
-        "VERTICALITY_SCHEMA": "VERTICALITY",
-        "NO_CLEAR_IMAGE_SCHEMA": "NONE",
-        "NO_CLEAR_SCHEMA": "NONE",
-        "NO_SCHEMA": "NONE",
-        "N/A": "NONE",
-        "NA": "NONE",
-    }
-    label = aliases.get(label, label)
-    return label if label in allowed else default
+        return None
+    text = str(value).strip().lower()
+    return text if text in ALLOWED_LITERALITY else "uncertain"
 
 
-def strip_code_fences(text: str) -> str:
-    stripped = text.strip()
-    full = re.fullmatch(
-        r"```(?:json|javascript|js|python)?\s*(.*?)\s*```",
-        stripped,
-        flags=re.DOTALL | re.IGNORECASE,
-    )
-    if full:
-        return full.group(1).strip()
+def _normalise_schema_present(
+    value: Any,
+    main_schema: str | None,
+    literality: str | None,
+) -> str | None:
+    if value is not None:
+        text = str(value).strip().lower()
+        if text in ALLOWED_SCHEMA_PRESENT:
+            return text
+        if text in {"true", "present"}:
+            return "yes"
+        if text in {"false", "absent", "none", "no_schema", "no schema"}:
+            return "no"
 
-    inner = re.search(
-        r"```(?:json|javascript|js|python)?\s*(.*?)\s*```",
-        stripped,
-        flags=re.DOTALL | re.IGNORECASE,
-    )
-    if inner:
-        return inner.group(1).strip()
-
-    return stripped
-
-
-def _replace_smart_quotes(text: str) -> str:
-    for src, dst in {"“": '"', "”": '"', "‘": "'", "’": "'"}.items():
-        text = text.replace(src, dst)
-    return text
-
-
-def _remove_json_comments(text: str) -> str:
-    text = re.sub(r"^\s*//.*?$", "", text, flags=re.MULTILINE)
-    text = re.sub(r"/\*.*?\*/", "", text, flags=re.DOTALL)
-    return text
-
-
-def _remove_trailing_commas(text: str) -> str:
-    return re.sub(r",\s*([}\]])", r"\1", text)
-
-
-def _quote_unquoted_keys(text: str) -> str:
-    return re.sub(r'([{,]\s*)([A-Za-z_][A-Za-z0-9_\-]*)(\s*:)', r'\1"\2"\3', text)
-
-
-def _extract_balanced_json_objects(text: str) -> list[str]:
-    objects: list[str] = []
-    stack = 0
-    start: int | None = None
-    in_string = False
-    escape = False
-    quote_char = ""
-
-    for i, ch in enumerate(text):
-        if in_string:
-            if escape:
-                escape = False
-            elif ch == "\\":
-                escape = True
-            elif ch == quote_char:
-                in_string = False
-            continue
-
-        if ch in {'"', "'"}:
-            in_string = True
-            quote_char = ch
-            continue
-
-        if ch == "{":
-            if stack == 0:
-                start = i
-            stack += 1
-        elif ch == "}":
-            if stack > 0:
-                stack -= 1
-                if stack == 0 and start is not None:
-                    objects.append(text[start:i + 1])
-                    start = None
-
-    return objects
-
-
-def _attempt_json_loads(candidate: str) -> tuple[dict[str, Any], str]:
-    candidate = candidate.strip()
-
-    try:
-        data = json.loads(candidate)
-        if isinstance(data, dict):
-            return data, "strict_json"
-    except Exception:
-        pass
-
-    cleaned = _replace_smart_quotes(candidate)
-    cleaned = _remove_json_comments(cleaned)
-    cleaned = _remove_trailing_commas(cleaned)
-
-    try:
-        data = json.loads(cleaned)
-        if isinstance(data, dict):
-            return data, "strict_json_after_basic_cleanup"
-    except Exception:
-        pass
-
-    keyed = _remove_trailing_commas(_quote_unquoted_keys(cleaned))
-    try:
-        data = json.loads(keyed)
-        if isinstance(data, dict):
-            return data, "json_after_key_quoting"
-    except Exception:
-        pass
-
-    try:
-        data = ast.literal_eval(cleaned)
-        if isinstance(data, dict):
-            return data, "python_literal_eval"
-    except Exception:
-        pass
-
-    raise ValueError("Unable to parse candidate after repair attempts.")
-
-
-def extract_json_object(raw_response: str) -> tuple[dict[str, Any], str]:
-    """
-    Extract and parse the best complete JSON object from an LLM response.
-    """
-    text = _replace_smart_quotes(strip_code_fences(raw_response)).strip()
-    candidates = [text]
-
-    decoder = JSONDecoder()
-    for idx, ch in enumerate(text):
-        if ch == "{":
-            try:
-                obj, _ = decoder.raw_decode(text[idx:])
-                if isinstance(obj, dict):
-                    return obj, "json_decoder_raw_decode"
-            except Exception:
-                pass
-
-    candidates.extend(_extract_balanced_json_objects(text))
-    candidates = list(dict.fromkeys([c for c in candidates if c.strip()]))
-
-    expected_keys = {
-        "literal_or_metaphorical",
-        "main_image_schema",
-        "secondary_image_schemas",
-        "interpretation",
-        "schema_explanation",
-        "confidence",
-        "trajector",
-        "landmark_or_container",
-        "source_domain",
-        "target_domain",
-    }
-
-    parsed_candidates: list[tuple[int, dict[str, Any], str]] = []
-    errors: list[str] = []
-
-    for candidate in candidates:
-        try:
-            data, strategy = _attempt_json_loads(candidate)
-            score = len(expected_keys & set(data.keys()))
-            parsed_candidates.append((score, data, strategy))
-        except Exception as exc:
-            errors.append(f"{type(exc).__name__}: {exc}")
-
-    if parsed_candidates:
-        parsed_candidates.sort(key=lambda item: item[0], reverse=True)
-        _, data, strategy = parsed_candidates[0]
-        return data, strategy
-
-    raise ValueError("; ".join(errors[-3:]) if errors else "No parseable JSON object found.")
-
-
-def _extract_string_field(text: str, key: str, *, allow_unclosed: bool = False) -> str | None:
-    """
-    Extract a JSON-style string field. When allow_unclosed=True, a truncated
-    final string can also be recovered.
-    """
-    complete = re.search(
-        rf'"{re.escape(key)}"\s*:\s*"((?:\\.|[^"\\])*)"',
-        text,
-        flags=re.DOTALL,
-    )
-    if complete:
-        value = complete.group(1)
-        try:
-            return json.loads(f'"{value}"')
-        except Exception:
-            return value.replace('\\"', '"')
-
-    if allow_unclosed:
-        partial = re.search(
-            rf'"{re.escape(key)}"\s*:\s*"((?:\\.|[^"\\])*)$',
-            text,
-            flags=re.DOTALL,
-        )
-        if partial:
-            return partial.group(1).replace('\\"', '"')
-
+    if main_schema == "NONE" or literality == "control":
+        return "no"
+    if main_schema in ALLOWED_SCHEMAS and main_schema not in {"NONE", "uncertain", None}:
+        return "yes"
     return None
 
 
-def _extract_array_field(text: str, key: str) -> list[str] | None:
-    m = re.search(rf'"{re.escape(key)}"\s*:\s*(\[[^\]]*\])', text, flags=re.DOTALL)
-    if not m:
+def _normalise_confidence(value: Any) -> str | None:
+    if value is None:
         return None
-    candidate = _remove_trailing_commas(m.group(1))
+    confidence = str(value).strip().lower()
+    return confidence if confidence in {"high", "medium", "low"} else None
+
+
+def _extract_json_candidate(text: str) -> tuple[str, str]:
+    """
+    Extract a likely JSON object and the strategy used.
+
+    The function now returns a partial candidate if the response starts with
+    ``{`` but lacks a closing brace. That lets the partial-field parser recover
+    core annotation fields from truncated provider outputs.
+    """
+
+    stripped = text.strip()
+
+    if stripped.startswith("{") and stripped.endswith("}"):
+        return stripped, "strict_json"
+
+    fenced = re.search(
+        r"```(?:json)?\s*(\{.*?\})\s*```",
+        stripped,
+        flags=re.DOTALL | re.IGNORECASE,
+    )
+    if fenced:
+        return fenced.group(1).strip(), "fenced_json"
+
+    start = stripped.find("{")
+    end = stripped.rfind("}")
+
+    if start != -1 and end != -1 and end > start:
+        return stripped[start : end + 1].strip(), "embedded_json"
+
+    if start != -1:
+        return stripped[start:].strip(), "partial_json_prefix"
+
+    raise ValueError("No JSON object found in raw response text.")
+
+
+def _repair_common_json_issues(candidate: str) -> str:
+    repaired = candidate.strip()
+    repaired = repaired.replace("“", '"').replace("”", '"').replace("‘", "'").replace("’", "'")
+    repaired = re.sub(r"//.*?$", "", repaired, flags=re.MULTILINE)
+    repaired = re.sub(r"/\*.*?\*/", "", repaired, flags=re.DOTALL)
+    repaired = re.sub(r",\s*([}\]])", r"\1", repaired)
+    return repaired
+
+
+def _load_json_candidate(candidate: str) -> dict[str, Any]:
     try:
-        return _coerce_list(json.loads(candidate))
-    except Exception:
-        return None
+        data = json.loads(candidate)
+    except json.JSONDecodeError:
+        data = json.loads(_repair_common_json_issues(candidate))
 
-
-def _extract_empty_array_field(text: str, key: str) -> list[str] | None:
-    return [] if re.search(rf'"{re.escape(key)}"\s*:\s*\[\s*\]', text, flags=re.DOTALL) else None
-
-
-def partial_field_recovery(raw_response: str) -> dict[str, Any]:
-    """
-    Recover fields from incomplete/truncated JSON-like model output.
-
-    This is data-aware for the current raw_responses.jsonl pattern: many Gemini
-    records start with `literal_or_metaphorical` but are cut off before the
-    full JSON object closes. The parser therefore preserves the usable fields
-    rather than treating all truncated objects as complete failure.
-    """
-    text = _replace_smart_quotes(strip_code_fences(raw_response))
-
-    data: dict[str, Any] = {}
-    string_fields = [
-        "literal_or_metaphorical",
-        "main_image_schema",
-        "trajector",
-        "landmark_or_container",
-        "source",
-        "path",
-        "goal",
-        "obstacle",
-        "force",
-        "interpretation",
-        "schema_explanation",
-        "confidence",
-    ]
-
-    for key in string_fields:
-        value = _extract_string_field(
-            text,
-            key,
-            allow_unclosed=(key in {"literal_or_metaphorical", "main_image_schema"}),
-        )
-        if value is not None:
-            data[key] = value
-
-    for key in ["secondary_image_schemas", "source_domain", "target_domain"]:
-        value = _extract_array_field(text, key)
-        if value is None:
-            value = _extract_empty_array_field(text, key)
-        if value is not None:
-            data[key] = value
-
+    if not isinstance(data, dict):
+        raise ValueError("Parsed JSON is not an object.")
     return data
 
 
-def _classify_partial_data(data: dict[str, Any]) -> tuple[str, str, bool, bool]:
+def _extract_string_field(text: str, key: str) -> str | None:
     """
-    Return parse_status, parse_quality, usable_schema, usable_lm.
+    Extract a completed JSON string field from complete or truncated JSON text.
     """
-    lm = _normalise_label(data.get("literal_or_metaphorical"), ALLOWED_LITERALITY, default=None)
-    schema = _normalise_label(data.get("main_image_schema"), ALLOWED_SCHEMAS, default=None)
-
-    usable_lm = lm is not None
-    usable_schema = lm is not None and schema is not None
-
-    if usable_schema:
-        return "parsed", "partial_core_fields", True, True
-    if usable_lm:
-        return "partial", "partial_literality_only", False, True
-    if data:
-        return "partial", "partial_insufficient_fields", False, False
-    return "parse_error", "failed", False, False
+    pattern = re.compile(
+        rf'"{re.escape(key)}"\s*:\s*"((?:\\.|[^"\\])*)"',
+        flags=re.DOTALL,
+    )
+    match = pattern.search(text)
+    if not match:
+        return None
+    try:
+        return json.loads(f'"{match.group(1)}"')
+    except json.JSONDecodeError:
+        return match.group(1)
 
 
-def _build_parsed_response(
-    data: dict[str, Any],
+def _extract_array_field(text: str, key: str) -> list[str]:
+    pattern = re.compile(
+        rf'"{re.escape(key)}"\s*:\s*(\[(?:[^\[\]]|"(?:\\.|[^"\\])*")*\])',
+        flags=re.DOTALL,
+    )
+    match = pattern.search(text)
+    if not match:
+        return []
+    try:
+        value = json.loads(match.group(1))
+    except json.JSONDecodeError:
+        return []
+    return _coerce_list(value)
+
+
+def _apply_abstention_consistency(
     *,
-    parse_status: str,
-    parse_error: str | None,
-    parser_strategy: str,
-    parse_quality: str,
-    usable_for_schema_accuracy: bool,
-    usable_for_lm_accuracy: bool,
-) -> ParsedResponse:
-    literal_or_metaphorical = _normalise_label(
-        data.get("literal_or_metaphorical"),
-        ALLOWED_LITERALITY,
-        default=None,
+    schema_present: str | None,
+    literality: str | None,
+    main_schema: str | None,
+    secondary: list[str],
+    source_domain: list[str],
+    target_domain: list[str],
+) -> tuple[str | None, str | None, str | None, list[str], list[str], list[str]]:
+    """
+    Apply the pre-declared NONE / weak-schema consistency rule.
+
+    This only forces NONE when the model itself selected schema_present=no,
+    literal_or_metaphorical=control, or main_schema=NONE.
+    """
+
+    if schema_present == "no" or literality == "control" or main_schema == "NONE":
+        return "no", "control", "NONE", [], [], []
+
+    return schema_present, literality, main_schema, secondary, source_domain, target_domain
+
+
+def _normalised_response_from_data(data: dict[str, Any], *, parser_strategy: str, parse_quality: str) -> ParsedResponse:
+    literality = _normalise_literality(data.get("literal_or_metaphorical"))
+    main_schema = _normalise_schema(data.get("main_image_schema"))
+    schema_present = _normalise_schema_present(data.get("schema_present"), main_schema, literality)
+
+    secondary = [_normalise_schema(item) or "uncertain" for item in _coerce_list(data.get("secondary_image_schemas"))]
+    secondary = [item for item in secondary if item not in {"NONE", None}]
+
+    source_domain = _coerce_list(data.get("source_domain"))
+    target_domain = _coerce_list(data.get("target_domain"))
+
+    schema_present, literality, main_schema, secondary, source_domain, target_domain = _apply_abstention_consistency(
+        schema_present=schema_present,
+        literality=literality,
+        main_schema=main_schema,
+        secondary=secondary,
+        source_domain=source_domain,
+        target_domain=target_domain,
     )
 
-    main_image_schema = _normalise_label(
-        data.get("main_image_schema"),
-        ALLOWED_SCHEMAS,
-        default=None,
-    )
-
-    confidence = _normalise_label(
-        data.get("confidence"),
-        ALLOWED_CONFIDENCE,
-        default=None,
-    )
-
-    secondary = []
-    for item in _coerce_list(data.get("secondary_image_schemas")):
-        normalised = _normalise_label(item, ALLOWED_SCHEMAS, default=None)
-        if normalised and normalised != "NONE":
-            secondary.append(normalised)
-
-    return ParsedResponse(
-        parse_status=parse_status,
-        parse_error=parse_error,
+    return _make_response(
+        parse_status="parsed",
+        parse_error=None,
         parser_strategy=parser_strategy,
         parse_quality=parse_quality,
-        usable_for_schema_accuracy=usable_for_schema_accuracy,
-        usable_for_lm_accuracy=usable_for_lm_accuracy,
-        literal_or_metaphorical=literal_or_metaphorical,
-        main_image_schema=main_image_schema,
+        schema_present=schema_present,
+        literal_or_metaphorical=literality,
+        main_image_schema=main_schema,
         secondary_image_schemas=secondary,
         trajector=_coerce_str(data.get("trajector")),
         landmark_or_container=_coerce_str(data.get("landmark_or_container")),
@@ -506,77 +369,112 @@ def _build_parsed_response(
         goal=_coerce_str(data.get("goal")),
         obstacle=_coerce_str(data.get("obstacle")),
         force=_coerce_str(data.get("force")),
-        source_domain=_coerce_list(data.get("source_domain")),
-        target_domain=_coerce_list(data.get("target_domain")),
+        source_domain=source_domain,
+        target_domain=target_domain,
         interpretation=_coerce_str(data.get("interpretation")),
         schema_explanation=_coerce_str(data.get("schema_explanation")),
-        confidence=confidence,
+        confidence=_normalise_confidence(data.get("confidence")),
         parsed_json=data,
     )
 
 
-def parse_response_text(raw_response: str, *, expected_output_format: str) -> ParsedResponse:
-    raw_response = raw_response or ""
+def _partial_parse(candidate: str, *, parse_error: str | None = None) -> ParsedResponse:
+    """
+    Recover core fields from incomplete JSON.
 
+    This is mainly intended for Gemini outputs that are valid JSON prefixes but
+    are truncated before the final brace. The recovered record is flagged with
+    parser_strategy='partial_field_recovery' so analyses can include or exclude
+    it explicitly.
+    """
+
+    literality = _normalise_literality(_extract_string_field(candidate, "literal_or_metaphorical"))
+    main_schema = _normalise_schema(_extract_string_field(candidate, "main_image_schema"))
+    schema_present = _normalise_schema_present(
+        _extract_string_field(candidate, "schema_present"),
+        main_schema,
+        literality,
+    )
+
+    secondary = [_normalise_schema(item) or "uncertain" for item in _extract_array_field(candidate, "secondary_image_schemas")]
+    secondary = [item for item in secondary if item not in {"NONE", None}]
+    source_domain = _extract_array_field(candidate, "source_domain")
+    target_domain = _extract_array_field(candidate, "target_domain")
+
+    schema_present, literality, main_schema, secondary, source_domain, target_domain = _apply_abstention_consistency(
+        schema_present=schema_present,
+        literality=literality,
+        main_schema=main_schema,
+        secondary=secondary,
+        source_domain=source_domain,
+        target_domain=target_domain,
+    )
+
+    if literality and main_schema:
+        parse_status = "parsed"
+        parse_quality = "partial_core_fields"
+    elif literality:
+        parse_status = "partial"
+        parse_quality = "partial_literality_only"
+    elif main_schema:
+        parse_status = "partial"
+        parse_quality = "partial_schema_only"
+    else:
+        return _make_response(
+            parse_status="parse_error",
+            parse_error=parse_error or "Could not recover core fields from partial JSON.",
+            parser_strategy="partial_field_recovery",
+            parse_quality="failed",
+        )
+
+    return _make_response(
+        parse_status=parse_status,
+        parse_error=parse_error,
+        parser_strategy="partial_field_recovery",
+        parse_quality=parse_quality,
+        schema_present=schema_present,
+        literal_or_metaphorical=literality,
+        main_image_schema=main_schema,
+        secondary_image_schemas=secondary,
+        source_domain=source_domain,
+        target_domain=target_domain,
+        interpretation=_coerce_str(_extract_string_field(candidate, "interpretation")),
+        schema_explanation=_coerce_str(_extract_string_field(candidate, "schema_explanation")),
+        confidence=_normalise_confidence(_extract_string_field(candidate, "confidence")),
+        parsed_json={},
+    )
+
+
+def parse_response_text(raw_response: str, *, expected_output_format: str) -> ParsedResponse:
     if expected_output_format == "free_text":
-        return ParsedResponse(
+        return _make_response(
             parse_status="free_text_unparsed",
             parse_error=None,
-            parser_strategy="free_text_passthrough",
+            parser_strategy="free_text",
             parse_quality="free_text",
-            usable_for_schema_accuracy=False,
-            usable_for_lm_accuracy=False,
-            literal_or_metaphorical=None,
-            main_image_schema=None,
-            secondary_image_schemas=[],
-            trajector="",
-            landmark_or_container="",
-            source="",
-            path="",
-            goal="",
-            obstacle="",
-            force="",
-            source_domain=[],
-            target_domain=[],
             interpretation=raw_response.strip(),
-            schema_explanation="",
-            confidence=None,
-            parsed_json={},
         )
 
     try:
-        data, strategy = extract_json_object(raw_response)
-        complete_quality = "strict_complete" if strategy in {"strict_json", "json_decoder_raw_decode"} else "repaired_complete"
-        return _build_parsed_response(
-            data,
-            parse_status="parsed",
-            parse_error=None,
-            parser_strategy=strategy,
-            parse_quality=complete_quality,
-            usable_for_schema_accuracy=True,
-            usable_for_lm_accuracy=True,
-        )
-    except Exception as complete_exc:
-        partial = partial_field_recovery(raw_response)
-        parse_status, parse_quality, usable_schema, usable_lm = _classify_partial_data(partial)
-
-        if partial:
-            return _build_parsed_response(
-                partial,
-                parse_status=parse_status,
-                parse_error=f"complete_json_failed_partial_recovery: {type(complete_exc).__name__}: {complete_exc}",
-                parser_strategy="partial_key_value_recovery",
-                parse_quality=parse_quality,
-                usable_for_schema_accuracy=usable_schema,
-                usable_for_lm_accuracy=usable_lm,
-            )
-
-        return _empty_parse(
-            "parse_error",
-            f"{type(complete_exc).__name__}: {complete_exc}",
-            parser_strategy="tolerant_json_failed",
+        candidate, strategy = _extract_json_candidate(raw_response)
+    except Exception as exc:
+        return _make_response(
+            parse_status="parse_error",
+            parse_error=f"{type(exc).__name__}: {exc}",
+            parser_strategy="no_json_found",
             parse_quality="failed",
         )
+
+    try:
+        data = _load_json_candidate(candidate)
+    except Exception as exc:
+        return _partial_parse(candidate, parse_error=f"{type(exc).__name__}: {exc}")
+
+    return _normalised_response_from_data(
+        data,
+        parser_strategy=strategy,
+        parse_quality="complete",
+    )
 
 
 def parse_raw_response_record(raw_record: dict[str, Any]) -> dict[str, Any]:
@@ -605,6 +503,9 @@ def parse_raw_response_record(raw_record: dict[str, Any]) -> dict[str, Any]:
         "condition_family": raw_record.get("condition_family"),
         "temperature": raw_record.get("temperature"),
         "top_p": raw_record.get("top_p"),
+        "condition_max_output_tokens": raw_record.get("condition_max_output_tokens"),
+        "recommended_max_output_tokens": raw_record.get("recommended_max_output_tokens"),
+        "max_output_tokens": raw_record.get("max_output_tokens"),
         "sentence_id": raw_record.get("sentence_id"),
         "sentence_type": raw_record.get("sentence_type"),
         "expected_schema_primary": raw_record.get("expected_schema_primary"),
@@ -612,8 +513,7 @@ def parse_raw_response_record(raw_record: dict[str, Any]) -> dict[str, Any]:
         "repetition_index": raw_record.get("repetition_index"),
         "raw_response_status": raw_record.get("status"),
         "provider_response_id": raw_record.get("provider_response_id"),
-        "input_tokens": raw_record.get("input_tokens"),
-        "output_tokens": raw_record.get("output_tokens"),
+        "finish_reason": raw_record.get("finish_reason"),
     }
     result.update(parsed.to_dict())
     return result

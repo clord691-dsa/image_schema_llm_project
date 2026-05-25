@@ -1,4 +1,0 @@
-sentence_type,n_schema,schema_accuracy,n_lm,literal_metaphorical_accuracy
-control_weak_schema,1172.0,0.5793515358361775,1188.0,0.30976430976430974
-literal_spatial,1198.0,0.8088480801335559,1206.0,0.9925373134328358
-metaphorical_spatial,1199.0,0.9057547956630525,1206.0,0.9991708126036484

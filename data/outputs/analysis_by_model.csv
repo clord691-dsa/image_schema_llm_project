@@ -1,4 +1,0 @@
-provider,model_id,n_schema,schema_accuracy,n_lm,literal_metaphorical_accuracy
-anthropic,claude_sonnet_4_6,1200.0,0.6925,1200.0,0.79
-google,gemini_2_5_flash,1169.0,0.7399486740804107,1200.0,0.74
-openai,openai_gpt_5_4_mini,1200.0,0.865,1200.0,0.7783333333333333

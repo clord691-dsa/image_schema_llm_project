@@ -1,0 +1,36 @@
+{
+  "created_at": "2026-05-24T20:09:39.367168+00:00",
+  "dry_run": true,
+  "records": 9000,
+  "status_counts": {
+    "already_completed": 9000
+  },
+  "prompt_counts": {
+    "p_naive_v1": 1800,
+    "p_direct_schema_v1": 1800,
+    "p_structured_roles_v1": 1800,
+    "p_direct_schema_v2_abstention": 1800,
+    "p_structured_roles_v2_abstention": 1800
+  },
+  "condition_counts": {
+    "c_temp_0_v1": 3000,
+    "c_temp_03_v1": 6000
+  },
+  "sentence_type_counts": {
+    "literal_spatial": 3015,
+    "metaphorical_spatial": 3015,
+    "control_weak_schema": 2970
+  },
+  "estimated_input_tokens": 4594815,
+  "estimated_output_tokens": 18000000,
+  "estimated_total_cost": 138.20300025000077,
+  "estimated_cost_by_model": {
+    "openai_gpt_5_4_mini": 28.14870375000044,
+    "claude_sonnet_4_6": 94.59481500000092,
+    "gemini_2_5_flash": 15.459481499999324
+  },
+  "total_jobs_in_enabled_grid": 9000,
+  "completed_run_keys_found": 9000,
+  "pending_only": false,
+  "manifest_path": "/Users/Shared/image_schema_llm_project/data/outputs/dry_run_manifest.jsonl"
+}
