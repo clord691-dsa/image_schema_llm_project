@@ -1,0 +1,13 @@
+prompt_id,sentence_type,n,schema_unanimous_rate,lm_unanimous_rate,schema_present_unanimous_rate
+p_direct_schema_v1,control_weak_schema,198,0.1111111111111111,0.13131313131313133,0.13131313131313133
+p_direct_schema_v1,literal_spatial,201,0.835820895522388,0.9950248756218906,1.0
+p_direct_schema_v1,metaphorical_spatial,201,0.8109452736318408,1.0,1.0
+p_direct_schema_v2_abstention,control_weak_schema,198,0.6060606060606061,0.6212121212121212,0.6212121212121212
+p_direct_schema_v2_abstention,literal_spatial,201,0.8656716417910447,1.0,1.0
+p_direct_schema_v2_abstention,metaphorical_spatial,201,0.8656716417910447,0.9850746268656716,0.9850746268656716
+p_structured_roles_v1,control_weak_schema,198,0.45454545454545453,0.4696969696969697,0.4696969696969697
+p_structured_roles_v1,literal_spatial,201,0.8208955223880597,0.9552238805970149,0.9701492537313433
+p_structured_roles_v1,metaphorical_spatial,201,0.8855721393034826,1.0,1.0
+p_structured_roles_v2_abstention,control_weak_schema,198,0.6313131313131313,0.6464646464646465,0.6464646464646465
+p_structured_roles_v2_abstention,literal_spatial,201,0.8308457711442786,0.9850746268656716,1.0
+p_structured_roles_v2_abstention,metaphorical_spatial,201,0.8955223880597015,0.9950248756218906,0.9950248756218906

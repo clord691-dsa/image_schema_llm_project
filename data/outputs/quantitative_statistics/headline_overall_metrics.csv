@@ -1,0 +1,2 @@
+n,control_n,non_control_n,primary_schema_accuracy,lm_accuracy,schema_present_accuracy,control_accuracy,control_false_positive_schema_rate,non_control_lm_accuracy,non_control_primary_schema_accuracy,non_control_over_abstention_rate
+7200,2376,4824,0.80625,0.8911111111111111,0.8925,0.6784511784511784,0.32154882154882153,0.9958540630182421,0.8691956882255389,0.0020729684908789387

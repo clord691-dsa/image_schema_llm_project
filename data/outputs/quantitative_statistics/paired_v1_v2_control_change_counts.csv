@@ -1,0 +1,9 @@
+prompt_base,control_change_type,count
+direct_schema,correct_abstention_in_both,248
+direct_schema,false_positive_in_both,127
+direct_schema,v2_fixed_v1_false_positive,218
+direct_schema,v2_introduced_new_false_positive,1
+structured_roles,correct_abstention_in_both,404
+structured_roles,false_positive_in_both,101
+structured_roles,v2_fixed_v1_false_positive,61
+structured_roles,v2_introduced_new_false_positive,28

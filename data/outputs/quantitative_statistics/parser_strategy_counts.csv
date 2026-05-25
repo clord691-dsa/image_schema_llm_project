@@ -1,0 +1,5 @@
+parser_strategy,count
+strict_json,5881
+free_text,1800
+fenced_json,1200
+partial_field_recovery,119

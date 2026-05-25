@@ -1,0 +1,32 @@
+sentence_id,n,providers,prompts,predicted_schemas,predicted_lm,sentence_text
+s0098,18,anthropic; google; openai,p_direct_schema_v2_abstention; p_structured_roles_v2_abstention,CONTAINER; SOURCE_PATH_GOAL,literal,The driver parked near the school.
+s0167,13,anthropic; google; openai,p_direct_schema_v2_abstention; p_structured_roles_v2_abstention,CONTAINER; FORCE,literal,The student opened the notebook.
+s0025,12,anthropic; google,p_direct_schema_v2_abstention; p_structured_roles_v2_abstention,CONTAINER; SOURCE_PATH_GOAL,metaphorical; uncertain,The musician practised for an hour.
+s0197,12,anthropic; google,p_direct_schema_v2_abstention; p_structured_roles_v2_abstention,CONTAINER; SOURCE_PATH_GOAL,literal,The child drew a circle.
+s0032,12,anthropic; google,p_direct_schema_v2_abstention; p_structured_roles_v2_abstention,FORCE; SOURCE_PATH_GOAL,literal,The photographer adjusted the lens.
+s0165,12,anthropic; google,p_direct_schema_v2_abstention; p_structured_roles_v2_abstention,CONTAINER,literal; uncertain,The chef tasted the sauce.
+s0161,12,anthropic; google,p_direct_schema_v2_abstention; p_structured_roles_v2_abstention,FORCE,literal,The gardener trimmed the hedge.
+s0158,12,anthropic; google,p_direct_schema_v2_abstention; p_structured_roles_v2_abstention,BLOCKAGE,metaphorical,The committee delayed the decision.
+s0134,12,anthropic; google,p_direct_schema_v2_abstention; p_structured_roles_v2_abstention,CONTAINER,metaphorical; uncertain,The student saved the file.
+s0130,12,anthropic; google,p_direct_schema_v2_abstention; p_structured_roles_v2_abstention,CONTAINER,literal; uncertain,The intern filed the documents.
+s0129,12,anthropic; google,p_direct_schema_v2_abstention; p_structured_roles_v2_abstention,CONTAINER,literal,The parent packed the lunch.
+s0027,12,anthropic; google,p_direct_schema_v2_abstention; p_structured_roles_v2_abstention,FORCE; SOURCE_PATH_GOAL,literal,The gardener watered the roses at dawn.
+s0125,11,anthropic; google; openai,p_direct_schema_v2_abstention; p_structured_roles_v2_abstention,SOURCE_PATH_GOAL; VERTICALITY,metaphorical; uncertain,The singer warmed up quietly.
+s0066,11,anthropic; google,p_direct_schema_v2_abstention; p_structured_roles_v2_abstention,FORCE,literal; uncertain,The waiter cleaned the table.
+s0099,9,anthropic; google,p_direct_schema_v2_abstention; p_structured_roles_v2_abstention,FORCE,literal,The artist mixed the colour.
+s0091,9,anthropic; google,p_direct_schema_v2_abstention; p_structured_roles_v2_abstention,CONTAINER,metaphorical; uncertain,The student memorised the definition.
+s0033,9,anthropic; google,p_direct_schema_v2_abstention; p_structured_roles_v2_abstention,CONTAINER,literal; uncertain,The librarian sorted the records.
+s0164,9,anthropic; google,p_direct_schema_v2_abstention; p_structured_roles_v2_abstention,FORCE,literal,The musician tuned the violin.
+s0199,8,anthropic; google,p_direct_schema_v2_abstention; p_structured_roles_v2_abstention,CONTAINER; SOURCE_PATH_GOAL,literal; metaphorical; uncertain,The researcher saved the transcript.
+s0065,7,anthropic; google,p_direct_schema_v2_abstention; p_structured_roles_v2_abstention,VERTICALITY,literal; uncertain,The designer chose a larger font.
+s0200,6,google,p_direct_schema_v2_abstention; p_structured_roles_v2_abstention,CONTAINER,literal; metaphorical,The assistant organised the files.
+s0058,6,google,p_direct_schema_v2_abstention; p_structured_roles_v2_abstention,CONTAINER,metaphorical,The analyst summarised the report.
+s0092,5,google,p_direct_schema_v2_abstention; p_structured_roles_v2_abstention,CONTAINER,literal,The baker measured the flour.
+s0063,3,google,p_direct_schema_v2_abstention,FORCE,literal,The clerk printed the receipt.
+s0068,3,google,p_direct_schema_v2_abstention; p_structured_roles_v2_abstention,FORCE,literal,The visitor signed the form.
+s0192,3,google,p_direct_schema_v2_abstention; p_structured_roles_v2_abstention,CONTAINER,literal; metaphorical,The nurse recorded the temperature.
+s0194,2,google,p_direct_schema_v2_abstention,SOURCE_PATH_GOAL,metaphorical,The teacher explained the grammar.
+s0030,2,anthropic; google,p_direct_schema_v2_abstention; p_structured_roles_v2_abstention,SOURCE_PATH_GOAL,literal; uncertain,The student copied the timetable.
+s0132,1,google,p_direct_schema_v2_abstention,CONTAINER,literal,The mechanic inspected the engine.
+s0127,1,google,p_direct_schema_v2_abstention,VERTICALITY,metaphorical,The doctor updated the notes.
+s0061,1,google,p_structured_roles_v2_abstention,FORCE,metaphorical,The manager approved the invoice.

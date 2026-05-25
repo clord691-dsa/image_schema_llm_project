@@ -1,0 +1,9 @@
+prompt_id,condition_id,condition_family_short,n,false_positive_n,false_positive_rate,correct_none_rate
+p_direct_schema_v1,c_temp_03_v1,temp_0,396,230,0.5808080808080808,0.41919191919191917
+p_direct_schema_v1,c_temp_0_v1,temp_0,198,115,0.5808080808080808,0.41919191919191917
+p_direct_schema_v2_abstention,c_temp_03_v1,temp_0,396,88,0.2222222222222222,0.7777777777777778
+p_direct_schema_v2_abstention,c_temp_0_v1,temp_0,198,40,0.20202020202020202,0.797979797979798
+p_structured_roles_v1,c_temp_03_v1,temp_0,396,105,0.26515151515151514,0.7348484848484849
+p_structured_roles_v1,c_temp_0_v1,temp_0,198,57,0.2878787878787879,0.7121212121212122
+p_structured_roles_v2_abstention,c_temp_03_v1,temp_0,396,86,0.21717171717171718,0.7828282828282829
+p_structured_roles_v2_abstention,c_temp_0_v1,temp_0,198,43,0.21717171717171718,0.7828282828282829

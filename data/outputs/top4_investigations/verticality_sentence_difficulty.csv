@@ -1,0 +1,23 @@
+sentence_id,n,correct_n,accuracy,predicted_schemas,providers,prompts,sentence_text
+s0136,36,0,0.0,CONTAINER; SOURCE_PATH_GOAL,anthropic; google; openai,p_direct_schema_v1; p_direct_schema_v2_abstention; p_structured_roles_v1; p_structured_roles_v2_abstention,The stone fell into the pond.
+s0138,36,0,0.0,SUPPORT_BALANCE,anthropic; google; openai,p_direct_schema_v1; p_direct_schema_v2_abstention; p_structured_roles_v1; p_structured_roles_v2_abstention,The ladder leaned against the wall.
+s0143,36,0,0.0,SOURCE_PATH_GOAL,anthropic; google; openai,p_direct_schema_v1; p_direct_schema_v2_abstention; p_structured_roles_v1; p_structured_roles_v2_abstention,The cup slid down the slope.
+s0145,36,0,0.0,SOURCE_PATH_GOAL,anthropic; google; openai,p_direct_schema_v1; p_direct_schema_v2_abstention; p_structured_roles_v1; p_structured_roles_v2_abstention,The climber reached the summit.
+s0144,36,3,0.08333333333333333,SOURCE_PATH_GOAL; VERTICALITY,anthropic; google; openai,p_direct_schema_v1; p_direct_schema_v2_abstention; p_structured_roles_v1; p_structured_roles_v2_abstention,The bird descended toward the field.
+s0141,36,6,0.16666666666666666,SOURCE_PATH_GOAL; VERTICALITY,anthropic; google; openai,p_direct_schema_v1; p_direct_schema_v2_abstention; p_structured_roles_v1; p_structured_roles_v2_abstention,The apple fell from the branch.
+s0139,36,12,0.3333333333333333,SOURCE_PATH_GOAL; VERTICALITY,anthropic; google; openai,p_direct_schema_v1; p_direct_schema_v2_abstention; p_structured_roles_v1; p_structured_roles_v2_abstention,The flag dropped to the ground.
+s0137,36,20,0.5555555555555556,SOURCE_PATH_GOAL; VERTICALITY,anthropic; google; openai,p_direct_schema_v1; p_direct_schema_v2_abstention; p_structured_roles_v1; p_structured_roles_v2_abstention,The lift went up three floors.
+s0140,36,31,0.8611111111111112,SOURCE_PATH_GOAL; VERTICALITY,anthropic; google; openai,p_direct_schema_v1; p_direct_schema_v2_abstention; p_structured_roles_v1; p_structured_roles_v2_abstention,The smoke drifted upward.
+s0150,36,33,0.9166666666666666,FORCE; VERTICALITY,anthropic; google; openai,p_direct_schema_v1; p_direct_schema_v2_abstention; p_structured_roles_v1; p_structured_roles_v2_abstention,The scandal brought him down.
+s0142,36,34,0.9444444444444444,SOURCE_PATH_GOAL; VERTICALITY,anthropic; google; openai,p_direct_schema_v1; p_direct_schema_v2_abstention; p_structured_roles_v1; p_structured_roles_v2_abstention,The kite climbed higher in the wind.
+s0135,36,35,0.9722222222222222,SOURCE_PATH_GOAL; VERTICALITY,anthropic; google; openai,p_direct_schema_v1; p_direct_schema_v2_abstention; p_structured_roles_v1; p_structured_roles_v2_abstention,The balloon rose above the roof.
+s0149,36,35,0.9722222222222222,SOURCE_PATH_GOAL; VERTICALITY,anthropic; google; openai,p_direct_schema_v1; p_direct_schema_v2_abstention; p_structured_roles_v1; p_structured_roles_v2_abstention,Prices climbed again.
+s0146,36,36,1.0,VERTICALITY,anthropic; google; openai,p_direct_schema_v1; p_direct_schema_v2_abstention; p_structured_roles_v1; p_structured_roles_v2_abstention,Her mood lifted after the call.
+s0147,36,36,1.0,VERTICALITY,anthropic; google; openai,p_direct_schema_v1; p_direct_schema_v2_abstention; p_structured_roles_v1; p_structured_roles_v2_abstention,The company rose in public opinion.
+s0148,36,36,1.0,VERTICALITY,anthropic; google; openai,p_direct_schema_v1; p_direct_schema_v2_abstention; p_structured_roles_v1; p_structured_roles_v2_abstention,His confidence fell quickly.
+s0151,36,36,1.0,VERTICALITY,anthropic; google; openai,p_direct_schema_v1; p_direct_schema_v2_abstention; p_structured_roles_v1; p_structured_roles_v2_abstention,Her spirits sank during the winter.
+s0152,36,36,1.0,VERTICALITY,anthropic; google; openai,p_direct_schema_v1; p_direct_schema_v2_abstention; p_structured_roles_v1; p_structured_roles_v2_abstention,The rating dropped overnight.
+s0153,36,36,1.0,VERTICALITY,anthropic; google; openai,p_direct_schema_v1; p_direct_schema_v2_abstention; p_structured_roles_v1; p_structured_roles_v2_abstention,The team rose to the challenge.
+s0154,36,36,1.0,VERTICALITY,anthropic; google; openai,p_direct_schema_v1; p_direct_schema_v2_abstention; p_structured_roles_v1; p_structured_roles_v2_abstention,His status declined after the error.
+s0155,36,36,1.0,VERTICALITY,anthropic; google; openai,p_direct_schema_v1; p_direct_schema_v2_abstention; p_structured_roles_v1; p_structured_roles_v2_abstention,Morale climbed throughout the week.
+s0156,36,36,1.0,VERTICALITY,anthropic; google; openai,p_direct_schema_v1; p_direct_schema_v2_abstention; p_structured_roles_v1; p_structured_roles_v2_abstention,The argument elevated the debate.

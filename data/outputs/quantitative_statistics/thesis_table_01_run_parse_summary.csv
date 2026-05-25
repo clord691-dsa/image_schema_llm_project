@@ -1,0 +1,5 @@
+category,count,interpretation
+Raw model outputs,9000,Complete final manifest
+Naïve free-text baseline,1800,Expected unstructured outputs; not schema-scored
+Structured-prompt outputs,7200,Used for schema and literal/metaphorical evaluation
+Structured parse errors,0,Structured records lost to parsing failure

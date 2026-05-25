@@ -1,0 +1,13 @@
+provider,prompt_id,condition_id,condition_short,n_groups,schema_stability_rate,lm_stability_rate,schema_present_stability_rate
+anthropic,p_direct_schema_v1,c_temp_03_v1,temp_03,200,0.985,0.995,1.0
+anthropic,p_direct_schema_v2_abstention,c_temp_03_v1,temp_03,200,0.995,0.995,0.995
+anthropic,p_structured_roles_v1,c_temp_03_v1,temp_03,200,0.99,0.995,0.995
+anthropic,p_structured_roles_v2_abstention,c_temp_03_v1,temp_03,200,0.98,0.995,0.995
+google,p_direct_schema_v1,c_temp_03_v1,temp_03,200,0.865,0.905,0.915
+google,p_direct_schema_v2_abstention,c_temp_03_v1,temp_03,200,0.92,0.96,0.965
+google,p_structured_roles_v1,c_temp_03_v1,temp_03,200,0.865,0.92,0.94
+google,p_structured_roles_v2_abstention,c_temp_03_v1,temp_03,200,0.935,0.97,0.975
+openai,p_direct_schema_v1,c_temp_03_v1,temp_03,200,0.975,0.995,0.995
+openai,p_direct_schema_v2_abstention,c_temp_03_v1,temp_03,200,0.97,0.995,0.995
+openai,p_structured_roles_v1,c_temp_03_v1,temp_03,200,0.975,1.0,1.0
+openai,p_structured_roles_v2_abstention,c_temp_03_v1,temp_03,200,0.995,0.995,0.995

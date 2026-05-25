@@ -1,0 +1,13 @@
+prompt_id,prompt_generation,provider,n,verticality_accuracy,most_common_prediction
+p_direct_schema_v1,v1,anthropic,66,0.6363636363636364,VERTICALITY
+p_direct_schema_v1,v1,google,66,0.7121212121212122,VERTICALITY
+p_direct_schema_v1,v1,openai,66,0.696969696969697,VERTICALITY
+p_direct_schema_v2_abstention,v2_abstention,anthropic,66,0.7424242424242424,VERTICALITY
+p_direct_schema_v2_abstention,v2_abstention,google,66,0.7424242424242424,VERTICALITY
+p_direct_schema_v2_abstention,v2_abstention,openai,66,0.7272727272727273,VERTICALITY
+p_structured_roles_v1,v1,anthropic,66,0.5757575757575758,VERTICALITY
+p_structured_roles_v1,v1,google,66,0.6060606060606061,VERTICALITY
+p_structured_roles_v1,v1,openai,66,0.6818181818181818,VERTICALITY
+p_structured_roles_v2_abstention,v2_abstention,anthropic,66,0.6363636363636364,VERTICALITY
+p_structured_roles_v2_abstention,v2_abstention,google,66,0.6363636363636364,VERTICALITY
+p_structured_roles_v2_abstention,v2_abstention,openai,66,0.6818181818181818,VERTICALITY

@@ -1,0 +1,13 @@
+provider,model_id,prompt_id,n,false_positive_n,false_positive_rate,correct_none_rate
+anthropic,claude_sonnet_4_6,p_direct_schema_v1,198,189,0.9545454545454546,0.045454545454545456
+anthropic,claude_sonnet_4_6,p_direct_schema_v2_abstention,198,47,0.23737373737373738,0.7626262626262627
+anthropic,claude_sonnet_4_6,p_structured_roles_v1,198,53,0.2676767676767677,0.7323232323232324
+anthropic,claude_sonnet_4_6,p_structured_roles_v2_abstention,198,55,0.2777777777777778,0.7222222222222222
+google,gemini_2_5_flash,p_direct_schema_v1,198,139,0.702020202020202,0.29797979797979796
+google,gemini_2_5_flash,p_direct_schema_v2_abstention,198,77,0.3888888888888889,0.6111111111111112
+google,gemini_2_5_flash,p_structured_roles_v1,198,104,0.5252525252525253,0.47474747474747475
+google,gemini_2_5_flash,p_structured_roles_v2_abstention,198,69,0.3484848484848485,0.6515151515151515
+openai,openai_gpt_5_4_mini,p_direct_schema_v1,198,17,0.08585858585858586,0.9141414141414141
+openai,openai_gpt_5_4_mini,p_direct_schema_v2_abstention,198,4,0.020202020202020204,0.9797979797979798
+openai,openai_gpt_5_4_mini,p_structured_roles_v1,198,5,0.025252525252525252,0.9747474747474747
+openai,openai_gpt_5_4_mini,p_structured_roles_v2_abstention,198,5,0.025252525252525252,0.9747474747474747

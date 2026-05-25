@@ -1,0 +1,9 @@
+metric,count
+raw_records,9000
+parsed_records_all,9000
+structured_usable_records,7200
+naive_free_text_records,1800
+unique_sentences_in_structured,200
+unique_models_in_structured,3
+unique_prompts_in_structured,4
+unique_conditions_in_structured,2

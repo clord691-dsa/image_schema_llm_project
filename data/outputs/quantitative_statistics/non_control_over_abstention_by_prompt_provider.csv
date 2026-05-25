@@ -1,0 +1,13 @@
+prompt_id,provider,n,over_abstention_n,over_abstention_rate,primary_schema_accuracy,lm_accuracy
+p_direct_schema_v1,anthropic,402,0,0.0,0.8880597014925373,1.0
+p_direct_schema_v1,google,402,0,0.0,0.9054726368159204,1.0
+p_direct_schema_v1,openai,402,0,0.0,0.8084577114427861,0.9975124378109452
+p_direct_schema_v2_abstention,anthropic,402,0,0.0,0.9054726368159204,1.0
+p_direct_schema_v2_abstention,google,402,0,0.0,0.9104477611940298,1.0
+p_direct_schema_v2_abstention,openai,402,3,0.007462686567164179,0.8731343283582089,0.9925373134328358
+p_structured_roles_v1,anthropic,402,0,0.0,0.8432835820895522,1.0
+p_structured_roles_v1,google,402,0,0.0,0.8532338308457711,1.0
+p_structured_roles_v1,openai,402,6,0.014925373134328358,0.8258706467661692,0.9776119402985075
+p_structured_roles_v2_abstention,anthropic,402,0,0.0,0.8582089552238806,0.9925373134328358
+p_structured_roles_v2_abstention,google,402,0,0.0,0.8756218905472637,1.0
+p_structured_roles_v2_abstention,openai,402,1,0.0024875621890547263,0.8830845771144279,0.9900497512437811

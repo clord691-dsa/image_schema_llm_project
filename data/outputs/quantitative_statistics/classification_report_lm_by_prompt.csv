@@ -1,0 +1,15 @@
+prompt_id,target,class_label,precision,recall,f1_score,support
+p_direct_schema_v1,literal_metaphorical,control,1.0,0.41919191919191917,0.5907473309608541,594
+p_direct_schema_v1,literal_metaphorical,literal,0.6802259887005649,0.9983416252072969,0.8091397849462365,603
+p_direct_schema_v1,literal_metaphorical,metaphorical,0.9054054054054054,1.0,0.950354609929078,603
+p_direct_schema_v2_abstention,literal_metaphorical,control,0.9936034115138592,0.7845117845117845,0.876763875823142,594
+p_direct_schema_v2_abstention,literal_metaphorical,literal,0.8828696925329429,1.0,0.937791601866252,603
+p_direct_schema_v2_abstention,literal_metaphorical,metaphorical,0.9584664536741214,0.9950248756218906,0.9764035801464606,603
+p_direct_schema_v2_abstention,literal_metaphorical,uncertain,0.0,0.0,0.0,0
+p_structured_roles_v1,literal_metaphorical,control,0.9863013698630136,0.7272727272727273,0.8372093023255814,594
+p_structured_roles_v1,literal_metaphorical,literal,0.8892215568862275,0.9850746268656716,0.9346970889063729,603
+p_structured_roles_v1,literal_metaphorical,metaphorical,0.8688760806916427,1.0,0.9298380878951427,603
+p_structured_roles_v2_abstention,literal_metaphorical,control,0.9978540772532188,0.7828282828282829,0.8773584905660378,594
+p_structured_roles_v2_abstention,literal_metaphorical,literal,0.8818316100443131,0.9900497512437811,0.9328125,603
+p_structured_roles_v2_abstention,literal_metaphorical,metaphorical,0.9391575663026521,0.9983416252072969,0.9678456591639871,603
+p_structured_roles_v2_abstention,literal_metaphorical,uncertain,0.0,0.0,0.0,0
